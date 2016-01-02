@@ -1,2 +1,153 @@
-./teaching/
-under construction...
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Projects Browser</title>
+	<link rel="icon" type="image/x-icon" href="../lib/favicon.ico">
+	<link rel="stylesheet" type="text/css" href="../lib/style.css">
+    <script src="../lib/d3.min.js"></script>
+
+	<style type="text/css">
+
+		span.components,
+		span.dependencies {
+	    	border-radius: 5px;
+	    	margin: 3px;
+		    padding: 2px;
+		    display: inline-block;
+	    	font-size: .9em;
+	    }
+
+		span.components{
+			border: 2px solid #BDC0C7;
+		}
+
+		span.dependencies {
+			border: 2px solid #B73939;
+		}
+
+	    div#imageContainer {
+	    	margin: auto;
+	    	display: block;
+	    	border: 3px solid #000000;
+	    	border-radius: 10px;
+	    	padding: 10px;
+	    }
+
+	    div#slideshow{
+	    	margin: 0 auto;
+	    	text-align: center;
+	    }
+
+	    button{
+	    	cursor: pointer;
+	    }
+
+	    .files{
+	    	cursor: pointer;
+	    }
+
+	    .filename{
+	    	font-size: 13px;
+    		padding-left: 2px;
+    		padding-right: 6px;
+	    	text-decoration: underline;
+	    }
+
+		#viewer{
+	    	margin-top: .5em;
+		}
+
+	    object#viewer{
+	    	width: 960px;
+	    	height: 1200px;
+	    }
+
+    </style>
+</head>
+
+<body>
+	<header>
+		<!-- Course name and drop downs -->	
+		<div>
+			PennDesign | Building Performance Simulation | Fall 2015
+		
+		<select id = "project-name"></select>
+		<select id = "student-name"></select>
+		</div>
+	</header>
+	<div id = "info">
+		<!-- Student name / Assignment topic -->
+		<h1 id="student-name"></h1>
+		<h2 id="project-name">Pick One of the projects</h2>
+	</div>
+	<div id = "downloads">
+		<!-- list of available files to download -->
+	</div>
+	<div id = "viewer">
+		<!-- pdf viewer -->
+	</div> 
+	
+	<footer>
+		Created by <a href="https://github.com/mostaphaRoudsari" target="blank">Mostapha Sadeghipor Roudsari</a>
+		<a href="https://twitter.com/__mostapha__" target="blank" style="float:right"> @__Mostapha__</a>
+	</footer>
+</body>
+
+<script type="text/javascript">
+	
+	var school = "upenn",
+		course = "arch753",
+		semester = "fall15";
+		
+	var studentInfo = {
+			name: "john smith escobar",
+			email: "john@johnsmith.com"
+		},
+		project_name = "final project",
+		filenames = ["sample-file.gh", "sample-file.3dm", "sample-file.pdf", "sample-file.zip"]
+		pdffile = "syllabus/Syllabus-ARCH-753-BuildingPerformanceSimulation-Fall2015.pdf";
+
+	// update name
+	d3.select("h1#student-name")
+		.selectAll("a").data([studentInfo])
+		.enter()
+		.append("a")
+			.attr("target", "blank")
+			.attr("href", function(d){return "mailto:" + d.email + "?Subject=BPS%20Project";})
+			.text(function(d){return d.name;});
+
+	// update project name
+	d3.select("h2#project-name").text(project_name);
+
+	// update file list
+	var files = d3.select("div#downloads")
+		.selectAll("span").data(filenames)
+		.enter()
+		.append("span")
+		.attr("class", "files");
+
+	// append icons
+	files.append("img")
+		.attr("class", "filename")
+		.attr("src", function(d){return "../lib/icons/" + d.split(".")[d.split(".").length-1] + ".ico" });
+
+	// append file names
+	files.append("span")
+		.attr("class", "filename")
+		.text(function(d){return d;});
+
+	// update link for pdf file
+	var basePdfLocation = "../data/teaching/"+ school + "/" + course + "/" + semester + "/";
+	d3.select("div#viewer")
+		.append("object")
+			.attr("id", "viewer")
+			.attr("data", basePdfLocation + pdffile)
+			.attr("type", "application/pdf")
+			.append("param")
+				.attr("name", "zoom")
+				.attr("value", "scale"); //Set initial zoom. Won't work in Chrome
+;
+
+</script>
