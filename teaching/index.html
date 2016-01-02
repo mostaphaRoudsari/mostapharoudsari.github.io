@@ -61,7 +61,7 @@
 
 	    object#viewer{
 	    	width: 960px;
-	    	height: 1200px;
+	    	height: 720px;
 	    }
 
     </style>
@@ -97,70 +97,95 @@
 
 <script type="text/javascript">
 	
+	// this should be part of uri
 	var school = "upenn",
 		course = "arch753",
 		semester = "fall15";
-	
+
 	var students,
-		assignments;
-
-	// get courseInfo.json
-	courseInfo = "../data/teaching/"+ school + "/" + course + "/" + semester + "/courseInfo.json";
-
-	d3.json(courseInfo, function(data, error){
+		assignments,
+		baseLocation = "../data/teaching/"+ school + "/" + course + "/" + semester,
+		courseInfo = baseLocation + "/courseInfo.json";
+	
+	//var courseInfo = "https://dl.dropboxusercontent.com/u/16228160/D3TestData/courseInfo.json";
+	
+	// load courseInfo.json	
+	d3.json(courseInfo, function(error, data){
 		students = data.students;
 		assignments = data.assignments;
 
 		//create select for selecting one of the students
+		update_page(students[1], "final-project");
 	});
 
-	var studentInfo = {
-			name: "john smith escobar",
-			email: "john@johnsmith.com"
-		},
-		project_name = "final project",
-		filenames = ["sample-file.gh", "sample-file.3dm", "sample-file.pdf", "sample-file.zip"]
-		pdffile = "syllabus/Syllabus-ARCH-753-BuildingPerformanceSimulation-Fall2015.pdf";
+	function load_assignments(student){
+		//update assignment list based on student name
+	}
 
-	// update name
-	d3.select("h1#student-name")
-		.selectAll("a").data([studentInfo])
-		.enter()
-		.append("a")
-			.attr("target", "blank")
-			.attr("href", function(d){return "mailto:" + d.email + "?Subject=BPS%20Project";})
-			.text(function(d){return d.name;});
+	function reset_page(){
 
-	// update project name
-	d3.select("h2#project-name").text(project_name);
+		// remove all the current objects from the page
+		d3.select("h1#student-name").selectAll("a").remove();
+		d3.select("h2#project-name").selectAll("text").remove();
+		d3.select("div#downloads").selectAll("span").remove();
+		d3.select("div#viewer").selectAll("object").remove();
+	}
 
-	// update file list
-	var files = d3.select("div#downloads")
-		.selectAll("span").data(filenames)
-		.enter()
-		.append("span")
-		.attr("class", "files");
+	function update_page(student, assignment){	
+		
+		reset_page();
+		
+		var studentInfo = {
+				name: student.name + " " + student.familyname,
+				email: student.email
+			},
+			project_name = assignment,
+			filenames = student.assignments[assignment];
 
-	// append icons
-	files.append("img")
-		.attr("class", "filename")
-		.attr("src", function(d){return "../lib/icons/" + d.split(".")[d.split(".").length-1] + ".ico" });
+			pdffiles = filenames.filter(function(f){return f.toLowerCase().endsWith('.pdf')});
 
-	// append file names
-	files.append("span")
-		.attr("class", "filename")
-		.text(function(d){return d;});
+		var studentFolder = baseLocation + "students/" + student.familyname + "_" + student.name + "/" + project_name;
 
-	// update link for pdf file
-	var basePdfLocation = "../data/teaching/"+ school + "/" + course + "/" + semester + "/";
-	d3.select("div#viewer")
-		.append("object")
-			.attr("id", "viewer")
-			.attr("data", basePdfLocation + pdffile)
-			.attr("type", "application/pdf")
-			.append("param")
-				.attr("name", "zoom")
-				.attr("value", "scale"); //Set initial zoom. Won't work in Chrome
+		// update name
+		d3.select("h1#student-name")
+			.selectAll("a").data([studentInfo])
+			.enter()
+			.append("a")
+				.attr("target", "blank")
+				.attr("href", function(d){return "mailto:" + d.email + "?Subject=BPS%20Project";})
+				.text(function(d){return d.name;});
 
+		// update project name
+		d3.select("h2#project-name").text(project_name);
+
+		// update file list
+		var files = d3.select("div#downloads")
+			.selectAll("span").data(filenames)
+			.enter()
+			.append("span")
+			.attr("class", "files");
+
+		// append icons
+		files.append("img")
+			.attr("class", "filename")
+			.attr("src", function(d){return "../lib/icons/" + d.split(".")[d.split(".").length-1] + ".ico" });
+
+		// append file names
+		files.append("span")
+			.attr("class", "filename")
+			.text(function(d){return d;});
+
+		// update link for pdf file
+		d3.select("div#viewer")
+			.selectAll("object")
+			.data(pdffiles).enter()
+			.append("object")
+				.attr("id", "viewer")
+				.attr("data", function(d){return studentFolder + "/" + d;})
+				.attr("type", "application/pdf")
+				.append("param")
+					.attr("name", "zoom")
+					.attr("value", "scale"); //Set initial zoom. Won't work in Chrome
+	}
 
 </script>
