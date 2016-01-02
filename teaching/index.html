@@ -100,7 +100,20 @@
 	var school = "upenn",
 		course = "arch753",
 		semester = "fall15";
-		
+	
+	var students,
+		assignments;
+
+	// get courseInfo.json
+	courseInfo = "../data/teaching/"+ school + "/" + course + "/" + semester + "/courseInfo.json";
+
+	d3.json(courseInfo, function(data, error){
+		students = data.students;
+		assignments = data.assignments;
+
+		//create select for selecting one of the students
+	});
+
 	var studentInfo = {
 			name: "john smith escobar",
 			email: "john@johnsmith.com"
@@ -148,6 +161,6 @@
 			.append("param")
 				.attr("name", "zoom")
 				.attr("value", "scale"); //Set initial zoom. Won't work in Chrome
-;
+
 
 </script>

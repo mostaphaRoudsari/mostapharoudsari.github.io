@@ -1,5 +1,6 @@
 import os
 import shutil
+import json
 
 def reorganizeAssignments(baseFolder, targetFolder, students):
     """Copy students assignments from folders based on dates
@@ -70,3 +71,65 @@ def reorganizeAssignments(baseFolder, targetFolder, students):
                     shutil.copyfile(srcFileName, targetFileName)
 
 # reorganizeAssignments(baseFolder, targetFolder, students)
+
+
+def genCourseInfo(folder= r"C:\Users\Administrator\Documents\GitHub\mostapharoudsari.github.io\data\teaching\upenn\arch753\fall15", \
+                students = "students.json"):
+    """Take student data as a json file and folders
+        and generate a course.json
+    """
+    #with open(os.path.join(folder, students), "r") as studentsFile:
+    #    students = json.load(studentsFile)
+
+    students = [{'id':'0', 'name':'majed', 'familyname':'albakr', 'email':'malbakr@design.upenn.edu'},
+			  {'id':'1', 'name':'seung-hyeok', 'familyname':'bae', 'email':'baeseung__design.upenn.edu'},
+              {'id':'2', 'name':'niccolo', 'familyname':'benghi', 'email':'nbenghi__design.upenn.edu'},
+			  {'id':'3', 'name':'munazza', 'familyname':'bhatti', 'email':'munazza__design.upenn.edu'},
+              {'id':'4', 'name':'cai', 'familyname':'fang', 'email':'caifang__design.upenn.edu'},
+			  {'id':'5', 'name':'keun-hyuk', 'familyname':'jang', 'email':'keunj__design.upenn.edu'},
+              {'id':'6', 'name':'jaeho', 'familyname':'jin', 'email':'jinjaeho__design.upenn.edu'},
+			  {'id':'7', 'name':'ashish', 'familyname':'khemchandani', 'email':'ashishkh__design.upenn.edu'},
+              {'id':'8', 'name':'ksenia', 'familyname':'knyazkina', 'email':'kksenia__design.upenn.edu'},
+			  {'id':'9', 'name':'shin-yi', 'familyname':'kwan', 'email':'kwans__design.upenn.edu'},
+              {'id':'10', 'name':'jee-eun', 'familyname':'lee', 'email':'leejee__design.upenn.edu'},
+			  {'id':'11', 'name':'rajika', 'familyname':'maheshwari', 'email':'rajika__design.upenn.edu'},
+              {'id':'12', 'name':'pegah', 'familyname':'mahthur', 'email':'pegahmathur__gmail.com'},
+			  {'id':'13', 'name':'evan', 'familyname':'oskierko-jeznacki', 'email':'eosk__design.upenn.edu'},
+              {'id':'14', 'name':'mingbo', 'familyname':'peng', 'email':'mpen__design.upenn.edu'},
+			  {'id':'15', 'name':'shengliang', 'familyname':'rong', 'email':'srong__design.upenn.edu'},
+              {'id':'16', 'name':'janki', 'familyname':'vyas', 'email':'jankiv__design.upenn.edu'},
+			  {'id':'17', 'name':'xi', 'familyname':'yao', 'email':'xiyao__design.upenn.edu'},
+              {'id':'18', 'name':'yuntian', 'familyname':'wan', 'email':'wyuntian__design.upenn.edu'}]
+
+    courseInfo = {
+        'students': students,
+        'assignments' : []
+    }
+
+    for student in students:
+        # find all the assignments and add them under their name
+        # also add the assignment to assignments list
+        studentFolder = os.path.join(folder, 'students', student['familyname'] + "_" + student['name'])
+        student['assignments'] = {}
+        assignments = os.listdir(studentFolder)
+
+        for assignment in assignments:
+            if os.path.isdir(os.path.join(studentFolder, assignment)):
+                student['assignments'][assignment] = []
+
+                # find all the files
+                files = os.listdir(os.path.join(studentFolder, assignment))
+                for f in files:
+                    if os.path.isfile(os.path.join(studentFolder, assignment, f)):
+                        student['assignments'][assignment].append(f)
+
+                if assignment not in courseInfo['assignments']:
+                    courseInfo['assignments'].append(assignment)
+
+    courseInfo['assignments'].sort()
+
+    targetFile = os.path.join(folder, "courseInfo.json")
+    with open(targetFile, "w") as outf:
+        json.dump(courseInfo, outf)
+
+# genCourseInfo()
