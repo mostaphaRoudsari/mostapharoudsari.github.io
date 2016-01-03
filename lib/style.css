@@ -37,6 +37,8 @@ h2 a {
 
 select {
   float: right;
+  text-transform: capitalize;
+  margin-top: 5px;
 }
 
 .main-link {
@@ -67,6 +69,7 @@ image {
 footer {
   margin-top: 1em;
   font-size: small;
+  display: none;
 }
 
 aside {

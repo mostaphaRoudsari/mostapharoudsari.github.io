@@ -74,17 +74,15 @@
 <body>
 	<header>
 		<!-- Course name and drop downs -->	
-		<div>
+		<div id = "selectors">		
 			PennDesign | Building Performance Simulation | Fall 2015
-		
-		<select id = "project-name"></select>
-		<select id = "student-name"></select>
+			<select id = "student-name"></select>
 		</div>
 	</header>
 	<div id = "info">
 		<!-- Student name / Assignment topic -->
 		<h1 id="student-name"></h1>
-		<h2 id="project-name">Pick One of the projects</h2>
+		<h2 id="project-name">Pick One of the students</h2>
 	</div>
 	<div id = "downloads">
 		<!-- list of available files to download -->
@@ -111,19 +109,77 @@
 		baseLocation = "../data/teaching/"+ school + "/" + course + "/" + semester,
 		courseInfo = baseLocation + "/courseInfo.json";
 	
-	//var courseInfo = "https://dl.dropboxusercontent.com/u/16228160/D3TestData/courseInfo.json";
+	//courseInfo = "https://dl.dropboxusercontent.com/u/16228160/D3TestData/courseInfo.json";
 	
 	// load courseInfo.json	
 	d3.json(courseInfo, function(error, data){
 		students = data.students;
 		assignments = data.assignments;
 
-		//create select for selecting one of the students
-		update_page(students[1], "final-project");
+		// add selector for students
+		var studentSelect = d3.select("select#student-name");
+			
+		studentSelect.selectAll("option")
+              .data(students)
+              .enter()
+                .append("option")
+                .attr("value", function(d){ return d.id; })
+                .text(function(d){ return d.name + " " + d.familyname; });
+		
+		studentSelect.append("option")
+            .text("Students...")
+			.attr("selected", "selected")
+			.attr("disabled", "disabled");
+		
+		studentSelect.on("change", load_assignments);
 	});
 
-	function load_assignments(student){
+
+	function load_assignments(){
+		
+		reset_page();
+		
+		d3.select("h2#project-name").text("Pick One of the assignments!")
+		
 		//update assignment list based on student name
+		var studentId = d3.select(this).property("value");
+		var student = students.filter(function(s){return s.id == studentId;})[0];
+		
+		// add select object and list of assignments
+		// remove if there is any selector already for another student
+		d3.select("select#project-name").remove();
+
+		// add selector for students
+		var assignmentSelect = d3.select("div#selectors")
+			.append("select")
+			.attr("id", "project-name");
+		
+		assignmentSelect.selectAll("option")
+              .data(d3.keys(student['assignments']))
+              .enter()
+                .append("option")
+                .attr("value", function(d){ return d; })
+                .text(function(d){ return d; });
+		
+		assignmentSelect.append("option")
+            .text("Assignments...")
+			.attr("selected", "selected")
+			.attr("disabled", "disabled");
+		
+		assignmentSelect.on("change", load_assignment);
+	}
+
+
+	function load_assignment(){
+		// find the student
+		var studentId = d3.select("select#student-name").property("value");
+		var student = students.filter(function(s){return s.id == studentId;})[0];
+
+		// find the assignment
+		var assignment = d3.select(this).property("value");
+
+		// update page
+		update_page(student, assignment);
 	}
 
 	function reset_page(){
@@ -133,6 +189,9 @@
 		d3.select("h2#project-name").selectAll("text").remove();
 		d3.select("div#downloads").selectAll("span").remove();
 		d3.select("div#viewer").selectAll("object").remove();
+
+		//hide the footer
+		d3.select("footer").style("display", 'none');
 	}
 
 	function get_icon_name(filename){
@@ -197,6 +256,9 @@
 				.append("param")
 					.attr("name", "zoom")
 					.attr("value", "scale"); //Set initial zoom. Won't work in Chrome
+
+		// unhide the footer
+		d3.select("footer").style("display", 'block');
 	}
 
 </script>
