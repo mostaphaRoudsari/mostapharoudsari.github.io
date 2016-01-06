@@ -84,13 +84,15 @@
 		<h1 id="student-name"></h1>
 		<h2 id="project-name">Pick One of the students</h2>
 	</div>
+	<div id = "grid">
+		<!-- image grid -->
+	</div> 
 	<div id = "downloads">
 		<!-- list of available files to download -->
 	</div>
 	<div id = "viewer">
 		<!-- pdf viewer -->
 	</div> 
-	
 	<footer>
 		Created by <a href="https://github.com/mostaphaRoudsari" target="blank">Mostapha Sadeghipor Roudsari</a>
 		<a href="https://twitter.com/__mostapha__" target="blank" style="float:right"> @__Mostapha__</a>
@@ -109,7 +111,9 @@
 		baseLocation = "../data/teaching/"+ school + "/" + course + "/" + semester,
 		courseInfo = baseLocation + "/courseInfo.json";
 	
-	//courseInfo = "https://dl.dropboxusercontent.com/u/16228160/D3TestData/courseInfo.json";
+	var background = "../lib/images/gradient_background.png"
+	var background1 = "../lib/images/gradient_background_1.png"
+	courseInfo = "https://dl.dropboxusercontent.com/u/16228160/D3TestData/courseInfo.json";
 	
 	// load courseInfo.json	
 	d3.json(courseInfo, function(error, data){
@@ -132,6 +136,20 @@
 			.attr("disabled", "disabled");
 		
 		studentSelect.on("change", load_assignments);
+
+		// create grid
+		var studentsGrid = d3.select("#grid").selectAll(".grid")
+          	.data(students)
+        	.enter().insert("a", "br")
+          		.attr("class", "grid")
+          		.attr("title", function(d) {return d.name + " " + d.familyname;})
+          		.attr("href", function(d) { return "http://mostapharoudsari.github.io/teaching?who=" + d.id + "&where=" + school + "&when=" + semester + "&what=" + course; })
+            .style("background-image", function(d) { return "url(" + background + ")";});
+
+
+        studentsGrid.append("span")
+          .attr("class", "description")
+          .text(function(d) { return d.name.replace(/-/g, " ") + " " + d.familyname.replace(/-/g, " "); });
 	});
 
 
@@ -167,6 +185,24 @@
 			.attr("disabled", "disabled");
 		
 		assignmentSelect.on("change", load_assignment);
+
+		
+		d3.select("#grid").selectAll("a").remove();
+
+		// create grid
+		var assignmentsGrid = d3.select("#grid").selectAll(".grid")
+          	.data(d3.keys(student['assignments']))
+        	.enter().insert("a", "br")
+          		.attr("class", "grid")
+          		.attr("title", function(d) {return d;})
+          		.attr("href", function(d) { return "http://mostapharoudsari.github.io/teaching?who=" + studentId + "&where=" + school + "&when=" + semester + "&what=" + course + "&assignment=" + d; })
+            .style("background-image", function(d) { return "url(" + background1 + ")";});
+
+
+        assignmentsGrid.append("span")
+          .attr("class", "description")
+          .text(function(d) { return d; });
+
 	}
 
 

@@ -147,7 +147,7 @@ aside,
   color: #e6550d;
 }
 
-a.example {
+a.grid {
   background-position: 50% 0%;
   border: solid 1px #eee;
   border-bottom: solid 1px #ccc;
@@ -171,33 +171,35 @@ a.example {
   width: 232px;
 }
 
-a.example:nth-child(4n) {
+a.grid:nth-child(4n) {
   margin-right: 0;
 }
 
-a.example:hover,
-a.example:focus {
+a.grid:hover,
+a.grid:focus {
   background-color: #eee;
   background-position: 50% 100%;
   text-decoration: none;
 }
 
-a.example .description,
-a.example .date {
+a.grid .description,
+a.grid .date {
   position: absolute;
   padding: 10px;
   z-index: 2;
 }
 
-a.example .description {
+a.grid .description {
   top: 0;
   color: #000;
+  text-transform: capitalize;
 }
 
-a.example .date {
+a.grid .date {
   display: none;
 }
 
-a.example:hover .description {
+a.grid:hover .description {
   text-decoration: underline;
+  text-transform: capitalize;
 }
