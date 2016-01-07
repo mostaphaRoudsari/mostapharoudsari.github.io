@@ -94,7 +94,6 @@ def genCourseInfo(folder= r"C:\Users\Administrator\Documents\GitHub\mostapharoud
               {'id':'10', 'name':'jee-eun', 'familyname':'lee', 'email':'leejee@design.upenn.edu'},
 			  {'id':'11', 'name':'rajika', 'familyname':'maheshwari', 'email':'rajika@design.upenn.edu'},
               {'id':'12', 'name':'pegah', 'familyname':'mahthur', 'email':'pegahmathur__gmail.com'},
-			  {'id':'13', 'name':'evan', 'familyname':'oskierko-jeznacki', 'email':'eosk@design.upenn.edu'},
               {'id':'14', 'name':'mingbo', 'familyname':'peng', 'email':'mpen@design.upenn.edu'},
 			  {'id':'15', 'name':'shengliang', 'familyname':'rong', 'email':'srong@design.upenn.edu'},
               {'id':'16', 'name':'janki', 'familyname':'vyas', 'email':'jankiv@design.upenn.edu'},
@@ -103,7 +102,8 @@ def genCourseInfo(folder= r"C:\Users\Administrator\Documents\GitHub\mostapharoud
 
     courseInfo = {
         'students': students,
-        'assignments' : []
+        'assignments' : ["meyerson-hall-canopy", "daylighting-I", "daylighting-II", \
+                        "energy-and-daylighting", "indoor-comfort", "final-project"]
     }
 
     for student in students:
@@ -111,7 +111,7 @@ def genCourseInfo(folder= r"C:\Users\Administrator\Documents\GitHub\mostapharoud
         # also add the assignment to assignments list
         studentFolder = os.path.join(folder, 'students', student['familyname'] + "_" + student['name'])
         student['assignments'] = {}
-        assignments = os.listdir(studentFolder)
+        assignments = courseInfo['assignments']
 
         for assignment in assignments:
             if os.path.isdir(os.path.join(studentFolder, assignment)):
@@ -120,16 +120,12 @@ def genCourseInfo(folder= r"C:\Users\Administrator\Documents\GitHub\mostapharoud
                 # find all the files
                 files = os.listdir(os.path.join(studentFolder, assignment))
                 for f in files:
+                    if f == "thumbnail_0.png": continue
                     if os.path.isfile(os.path.join(studentFolder, assignment, f)):
                         student['assignments'][assignment].append(f)
-
-                if assignment not in courseInfo['assignments']:
-                    courseInfo['assignments'].append(assignment)
-
-    courseInfo['assignments'].sort()
 
     targetFile = os.path.join(folder, "courseInfo.json")
     with open(targetFile, "w") as outf:
         json.dump(courseInfo, outf)
 
-# genCourseInfo()
+genCourseInfo()

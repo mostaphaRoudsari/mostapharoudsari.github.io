@@ -2,12 +2,13 @@ html {
   min-width: 1040px;
 }
 
-body {
+body, body a {
   font-family: Helvetica, sans-serif;
   margin: 1em auto 4em auto;
   position: relative;
   tab-size: 2;
   width: 960px;
+  color: #000;
 }
 
 h1, h1 a {
@@ -18,7 +19,7 @@ h1, h1 a {
   color: #000;
 }
 
-h2 {
+h2, h2 a {
   margin-top: .5em;
   color: #aaa;
 }
@@ -26,13 +27,6 @@ h2 {
 h1, h2 {
   text-rendering: optimizeLegibility;
   text-transform: capitalize;
-}
-
-h2 a {
-  color: #ccc;
-  left: -20px;
-  position: absolute;
-  width: 740px;
 }
 
 select {
@@ -202,4 +196,10 @@ a.grid .date {
 a.grid:hover .description {
   text-decoration: underline;
   text-transform: capitalize;
+}
+
+a.description {
+  padding: 10px;
+  z-index: 2;
+  font-size: .4em;
 }

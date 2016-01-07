@@ -31,9 +31,6 @@ def pdf2png(pdfFile):
     del(reader)
 
 
-courseData = r"C:\Users\Administrator\Documents\GitHub\mostapharoudsari.github.io\data\teaching\upenn\arch753\fall15\courseInfo.json"
-studentsFolder = os.path.join(os.path.split(courseData)[0], 'students')
-folders = ["backup", "weather-data-analysis", "meyerson-hall-canopy", "daylighting-I", "daylighting-II", "energy-and-daylighting", "indoor-comfort"]
 
 """
 with open(courseData, "rb") as cData:
@@ -46,5 +43,19 @@ with open(courseData, "rb") as cData:
                 pdf2png(pdfFile)
 """
 
-pdfFile = r"C:\Users\Administrator\Documents\GitHub\mostapharoudsari.github.io\data\teaching\upenn\arch753\fall15\students\jin_jaeho\daylighting-I\Jin_Jaeho_Assignment 1012_Daylighting.pdf"
-pdf2png(pdfFile)
+courseData = r"C:\Users\Administrator\Documents\GitHub\mostapharoudsari.github.io\data\teaching\upenn\arch753\fall15\courseInfo.json"
+studentsFolder = os.path.join(os.path.split(courseData)[0], 'students')
+folders = ["daylighting-I", "daylighting-II"]
+#folders = ["weather-data-analysis", "meyerson-hall-canopy", "energy-and-daylighting", "indoor-comfort"]
+
+with open(courseData, "rb") as cData:
+    data = json.load(cData)
+    for student in data['students']:
+        for assignment in folders:
+            folder = os.path.join(studentsFolder, student["familyname"] + "_" + student["name"], assignment)
+            thumbnail = os.path.join(folder, "thumbnail_0.png")
+            pdfFile = os.path.join(folder, student["familyname"] + "_" + student["name"] + ".pdf")
+
+            if os.path.isdir(folder):
+                if not os.path.isfile(thumbnail):
+                    pdf2png(pdfFile)
