@@ -100,29 +100,30 @@ def genCourseInfo(folder= r"C:\Users\Administrator\Documents\GitHub\mostapharoud
 			  {'id':'17', 'name':'xi', 'familyname':'yao', 'email':'xiyao@design.upenn.edu'},
               {'id':'18', 'name':'yuntian', 'familyname':'wan', 'email':'wyuntian@design.upenn.edu'}]
 
-    courseInfo = {
-        'students': students,
-        'assignments' : ["meyerson-hall-canopy", "daylighting-I", "daylighting-II", \
+    assignments = ["meyerson-hall-canopy", "daylighting-I", "daylighting-II", \
                         "energy-and-daylighting", "indoor-comfort", "final-project"]
+    courseInfo = {
+        'students': students
     }
 
     for student in students:
         # find all the assignments and add them under their name
         # also add the assignment to assignments list
         studentFolder = os.path.join(folder, 'students', student['familyname'] + "_" + student['name'])
-        student['assignments'] = {}
-        assignments = courseInfo['assignments']
+        student['assignments'] = []
 
         for assignment in assignments:
             if os.path.isdir(os.path.join(studentFolder, assignment)):
-                student['assignments'][assignment] = []
+                assignmentFiles = []
 
                 # find all the files
                 files = os.listdir(os.path.join(studentFolder, assignment))
                 for f in files:
                     if f == "thumbnail_0.png": continue
                     if os.path.isfile(os.path.join(studentFolder, assignment, f)):
-                        student['assignments'][assignment].append(f)
+                        assignmentFiles.append(f)
+
+                student['assignments'].append({ 'name': assignment, 'files' : assignmentFiles})
 
     targetFile = os.path.join(folder, "courseInfo.json")
     with open(targetFile, "w") as outf:

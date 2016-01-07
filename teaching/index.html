@@ -133,7 +133,6 @@
 		assignment = keywords.which;
 
 	var students,
-		assignments,
 		uridecode = "../data/teaching/uridecode.json",
 		baseLocation = "../data/teaching/"+ school + "/" + course + "/" + semester,
 		courseInfo = baseLocation + "/courseInfo.json";
@@ -141,8 +140,8 @@
 	var background = "../lib/images/gradient_background.png"
 	var background1 = "../lib/images/gradient_background_1.png"
 	
-	courseInfo = "https://dl.dropboxusercontent.com/u/16228160/D3TestData/courseInfo.json";
-	uridecode = "https://dl.dropboxusercontent.com/u/16228160/D3TestData/uridecode.json";
+	//courseInfo = "https://dl.dropboxusercontent.com/u/16228160/D3TestData/courseInfo.json";
+	//uridecode = "https://dl.dropboxusercontent.com/u/16228160/D3TestData/uridecode.json";
 	
 	// generate heading
 	d3.json(uridecode, function(error, data){
@@ -161,7 +160,6 @@
 	// load courseInfo.json	
 	d3.json(courseInfo, function(error, data){
 		students = data.students;
-		assignments = data.assignments;
 
 		// render the page based on input keywords
 		if (!studentId && !assignment){
@@ -214,7 +212,13 @@
 		update_project_name(assignment);
 
 		// pick students who have submitted this assignment
-		var selectedStudents = students.filter(function(s){return d3.keys(s['assignments']).indexOf(assignment) != -1;});
+		var selectedStudents = students.filter(function(s){
+
+			var assignments = s['assignments'].map(function(asg){ return asg.name; });
+
+			return assignments.indexOf(assignment) != -1;
+
+		});
 
 		// create grid
 		var assignmentsGrid = d3.select("#grid").selectAll(".grid")
@@ -252,7 +256,7 @@
 
 		// create grid
 		var assignmentsGrid = d3.select("#grid").selectAll(".grid")
-          	.data(d3.keys(student['assignments']))
+          	.data(student['assignments'].map(function(d){ return d.name; }))
         	.enter().insert("a", "br")
           		.attr("class", "grid")
           		.attr("title", function(d) {return d;})
@@ -268,7 +272,6 @@
 
 	}
 
-
 	function load_assignment(){	
 		
 		reset_page();
@@ -278,8 +281,11 @@
 				name: student.name + " " + student.familyname,
 				email: student.email
 			},
-			project_name = assignment,
-			filenames = student.assignments[assignment];
+			project_name = assignment;
+
+		var assignmentInfo = student["assignments"].filter(function(d){ return d.name == project_name; })[0];
+				
+		var filenames = assignmentInfo["files"];
 
 		var pdffiles = filenames.filter(function(f){return f.toLowerCase().endsWith('.pdf')});
 
