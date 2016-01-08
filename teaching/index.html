@@ -152,7 +152,7 @@
 
 		d3.select("div#course-info")
 			.append("a")
-				.attr("href", function(d){ return encodeURIComponent("https://mostapharoudsari.github.io/teaching?where=" + school + "&when=" + semester + "&what=" + course); })
+				.attr("href", function(d){ return "https://mostapharoudsari.github.io/teaching?where=" + school + "&when=" + semester + "&what=" + course; })
 				.text(titleText);
 	});
 
@@ -194,7 +194,7 @@
         	.enter().insert("a", "br")
           		.attr("class", "grid")
           		.attr("title", function(d) {return d.name + " " + d.familyname;})
-          		.attr("href", function(d) { return encodeURIComponent("https://mostapharoudsari.github.io/teaching?who=" + d.id + "&where=" + school + "&when=" + semester + "&what=" + course); })
+          		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching?who=" + d.id + "&where=" + school + "&when=" + semester + "&what=" + course; })
             .style("background-image", function(d) { return "url(" + background + ")";});
 
 
@@ -226,7 +226,7 @@
         	.enter().insert("a", "br")
           		.attr("class", "grid")
           		.attr("title", function(d) {return d.familyname + "_" + d.name;})
-          		.attr("href", function(d) { return encodeURIComponent("https://mostapharoudsari.github.io/teaching?who=" + d.id + "&where=" + school + "&when=" + semester + "&what=" + course + "&which=" + assignment); })
+          		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching?who=" + d.id + "&where=" + school + "&when=" + semester + "&what=" + course + "&which=" + assignment; })
             .style("background-image", function(d) {
             	return "url(" + baseLocation + "/students/" + d.familyname + "_" + d.name + "/" + assignment + "/thumbnail_0.png" + ")";
             });
@@ -260,7 +260,7 @@
         	.enter().insert("a", "br")
           		.attr("class", "grid")
           		.attr("title", function(d) {return d;})
-          		.attr("href", function(d) { return encodeURIComponent("https://mostapharoudsari.github.io/teaching?who=" + studentId + "&where=" + school + "&when=" + semester + "&what=" + course + "&which=" + d); })
+          		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching?who=" + studentId + "&where=" + school + "&when=" + semester + "&what=" + course + "&which=" + d; })
             .style("background-image", function(d) {
             	return "url(" + baseLocation + "/students/" + student.familyname + "_" + student.name + "/" + d + "/thumbnail_0.png" + ")";
             });
@@ -303,7 +303,7 @@
 			.append("span")
 			.attr("class", "files")
 			.attr("title", "Click to download the file.")
-			.on("click", function(d){ window.location = encodeURIComponent(studentFolder + "/" + d);});
+			.on("click", function(d){ window.location = studentFolder + "/" + d;});
 
 		// append icons
 		files.append("img")
@@ -321,7 +321,7 @@
 			.data(pdffiles).enter()
 			.append("object")
 				.attr("id", "viewer")
-				.attr("data", function(d){return encodeURIComponent(studentFolder + "/" + d);})
+				.attr("data", function(d){return studentFolder + "/" + d;})
 				.attr("type", "application/pdf")
 				.append("param")
 					.attr("name", "zoom")
@@ -364,7 +364,7 @@
 		// update project name		
 		d3.select("h2#project-name")
 			.append("a")
-			.attr("href", function(d){return encodeURIComponent("https://mostapharoudsari.github.io/teaching?where=" + school + "&when=" + semester + "&what=" + course + "&which=" + project_name);})
+			.attr("href", function(d){return "https://mostapharoudsari.github.io/teaching?where=" + school + "&when=" + semester + "&what=" + course + "&which=" + project_name;})
 			.text(project_name.replace(/-/g, " "));
 	}
 
