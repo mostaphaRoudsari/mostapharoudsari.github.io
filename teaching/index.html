@@ -303,7 +303,7 @@
 			.append("span")
 			.attr("class", "files")
 			.attr("title", "Click to download the file.")
-			.on("click", function(d){ window.location = studentFolder + "/" + d;});
+			.on("click", function(d){ window.location = studentFolder + "/" + encodeURIComponent(d);});
 
 		// append icons
 		files.append("img")
@@ -321,7 +321,7 @@
 			.data(pdffiles).enter()
 			.append("object")
 				.attr("id", "viewer")
-				.attr("data", function(d){return studentFolder + "/" + d;})
+				.attr("data", function(d){return studentFolder + "/" + encodeURIComponent(d);})
 				.attr("type", "application/pdf")
 				.append("param")
 					.attr("name", "zoom")
