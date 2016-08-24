@@ -39,8 +39,9 @@
 <body>
 
 <script>
-var width = screen.width,
-    height = screen.height,
+var ratio = window.devicePixelRatio || 1,
+    width = screen.width * ratio,
+    height = screen.height * ratio,
     iconSize = 45,
     textPadding = 25;
 
