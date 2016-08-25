@@ -30,6 +30,14 @@
       fill:
     }
 
+
+    a {
+        margin: 0;
+        position: absolute;
+        margin-top:1em;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
 </style>
 
 <head>
@@ -37,11 +45,11 @@
 </head>
 
 <body>
-
+<a href="mailto:info@ladybug.tools?subject=ladybug support">contact us</a>
+<div id="graph"></div>
 <script>
-var ratio = window.devicePixelRatio || 1,
-    width = screen.width * ratio,
-    height = screen.height * ratio,
+var width = window.innerWidth,
+    height = window.innerHeight,
     iconSize = 45,
     textPadding = 25;
 
@@ -77,15 +85,16 @@ var graph = {
 }
 
 var transform = d3.zoomIdentity;
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#graph").append("svg")
     .attr("width", width)
     .attr("height", height)
     .call(d3.zoom().scaleExtent([1 / 2, 8]).on("zoom", zoomed))
-  .append("g")
+
+g = svg.append("g")
     .attr("transform", "translate(0,0)");
 
 function zoomed() {
-    svg.attr("transform", d3.event.transform);
+    g.attr("transform", d3.event.transform);
 }
 
 var simulation = d3.forceSimulation()
@@ -103,12 +112,12 @@ simulation
   .force("link")
   .links(graph.links);
 
-var link = svg.selectAll(".link")
+var link = g.selectAll(".link")
     .data(graph.links)
   .enter().append("line")
     .attr("class", "link");
 
-var node = svg.selectAll(".node")
+var node = g.selectAll(".node")
     .data(graph.nodes)
   .enter().append("g")
     .attr("class", "node");
@@ -143,6 +152,8 @@ d3.selectAll("image")
     .append("title")
     .text(function(d) { return d.id; })
 
+d3.select(window).on("resize", center);
+
 function ticked() {
     link
         .attr("x1", function(d) { return d.source.x; })
@@ -153,6 +164,19 @@ function ticked() {
     node
         .attr("cx", function(d) { return d.x; })
         .attr("cy", function(d) { return d.y; });
+}
+
+function center(){
+    var x = window.innerWidth;
+    var y = window.innerHeight;
+
+    svg.attr("width", x).attr("height", y);
+
+    simulation.force("center")
+        .x(x / 2)
+        .y(y / 2);
+
+    simulation.alphaTarget(0.2).restart();
 }
 
 function dragstarted(d) {
