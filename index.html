@@ -2,6 +2,19 @@
 <meta charset="utf-8">
 <title>Ladybug Analysis Tools</title>
 <style>
+	.wrap {
+	width: 100%;
+	}
+
+	.floatleft, .floatright {
+		float:left;
+		width: 10%;
+	}
+
+	.floatright {
+		width: 90%;
+	}
+
     body {
       overflow:hidden;
        margin:0;
@@ -26,17 +39,14 @@
       stroke-width: 1.5px;
     }
 
-    circle {
-      fill:
-    }
-
 
     a {
+		font-family: "Helvetica", "sans", "sans-serif";
+		font-size: 1em;
         margin: 0;
-        position: absolute;
-        margin-top:1em;
+        position: relative;
+        margin-top:40%;
         left: 50%;
-        transform: translate(-50%, -50%);
     }
 </style>
 
@@ -45,8 +55,27 @@
 </head>
 
 <body>
-<a href="mailto:info@ladybug.tools?subject=ladybug support">contact us</a>
-<div id="graph"></div>
+
+<div class="wrap">
+    <div class="floatleft">
+		<br><br><hr>
+		<a href="http://www.grasshopper3d.com/group/ladybug" target='_blank'>Community</a><br><hr>
+		<a>Download</a><br>
+		<a href="https://www.food4rhino.com/app/ladybug-honeybee"  target='_blank'>Grasshopper</a><br>
+		<a href="https://dynamopackages.com/"  target='_blank'>Dynamo</a><br>
+		<hr>
+		<a href="https://www.facebook.com/LadybugAnalysisTools/"  target='_blank'>Facebook</a><br>
+		<a href="https://twitter.com/ladybug_tool"  target='_blank'>Twitter</a><br>
+		<hr>
+		<a href="mailto:info@ladybug.tools?subject=ladybug support">Contact</a>
+		<hr>
+	</div>
+    <div class="floatright">
+		<div id="graph"></div>
+	</div>
+</div>
+
+
 <script>
 var width = window.innerWidth,
     height = window.innerHeight;
