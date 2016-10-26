@@ -110,6 +110,9 @@ def dumpFiles(assignmentname, source, target, thumbnail=True):
     # create a new folder for this assignement if it's not there yet
     # copy files
     for f in os.listdir(source):
+        if os.path.getsize(os.path.join(source, f)) > 10 ** 8:
+            print 'ERR: File size is larger than 100 MB. Resubmit the file.\n\t{}'.format(f)
+            continue
         n, ext = os.path.splitext(f)
         try:
             try:
@@ -117,7 +120,7 @@ def dumpFiles(assignmentname, source, target, thumbnail=True):
             except:
                 name, familyname = n.split()[:2]
         except Exception as e:
-            print 'ERR: Failed to find name, familyname from {}!\n\t\t{}'.format(n, e)
+            print 'ERR: Failed to find name, familyname from {}!\n\t{}'.format(n, e)
         else:
             # check for the folder
             sf = os.path.join(target, 'students',
@@ -142,19 +145,58 @@ def dumpFiles(assignmentname, source, target, thumbnail=True):
                 os.rename(os.path.join(source, f),
                           os.path.join(tf, f))
             except Exception, e:
-                print 'ERR: Failed to move {} to {}:\n{}'.format(f, tf, e)
+                print 'ERR: Failed to move {} to {}:\n\t{}'.format(f, tf, e)
             else:
                 # if pdf create a thumbnail
                 if thumbnail and f.lower().endswith('pdf'):
-                    print "create thumbnails for {}".format(f.lower())
+                    print "Creating thumbnails for {}".format(f.lower())
                     pdf2thumbnails(os.path.join(tf, f.lower()))
 
 
+def renameThumbnails(coursefolder, assignments):
+    """Search folders and rename thumbnail files to thumbnail_0."""
+    # thumbnail_0.png
+    with open(os.path.join(coursefolder, 'students.json')) as si:
+        studentsInfo = eval('\n'.join(si.readlines()))
+
+    for student in studentsInfo:
+        # find all the assignments and add them under their name
+        # also add the assignment to assignments list
+        studentFolder = os.path.join(coursefolder, 'students', student['familyname'] + "_" + student['name'])
+        for assignment in assignments:
+            if os.path.isdir(os.path.join(studentFolder, assignment)):
+                # get png files
+                f = os.path.join(studentFolder, assignment)
+                pngFiles = tuple(ff.lower() for ff in os.listdir(f) if ff.lower().endswith('.png'))
+
+                if not pngFiles:
+                    continue
+
+                if len(pngFiles) == 1:
+                    # remove rest of the files
+                    if pngFiles[0] == 'thumbnail_0.png':
+                        continue
+                    else:
+                        # rename file to thumbnail_0
+                        print 'Renaming {}\\{}'.format(f, pngFiles[0])
+                        os.rename(os.path.join(f, pngFiles[0]),
+                                  os.path.join(f, 'thumbnail_0.png'))
+                elif 'thumbnail_0.png' in pngFiles:
+                    # remove rest of the files
+                    for pf in pngFiles:
+                        if pf != 'thumbnail_0.png':
+                            print 'removing {}\\{}'.format(f, pf)
+                            # os.remove(os.path.join(f, pf))
+                else:
+                    print 'Check {} and rename one of the files to thumbnail_0.png'.format(f)
+
+
 if __name__ == '__main__':
-    s = r'C:\UPENN\160919'
+    s = r'C:\UPENN\161017'
     f = r'C:\Users\Administrator\Documents\GitHub\mostapharoudsari.github.io\data\teaching\upenn\arch753\fall16'
 
     assignments = ("dream-room", "meyerson-hall-canopy", "weather-data-analysis",
-                   "weather-data-analysis-II")
-    # dumpFiles('weather-data-analysis', s, f)
-    updateCourseInformation(f, assignments)
+                   "weather-data-analysis-II", "daylighting-I")
+    # dumpFiles('daylighting-I', s, f)
+    # renameThumbnails(f, assignments)
+    # updateCourseInformation(f, assignments)
