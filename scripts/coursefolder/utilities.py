@@ -192,11 +192,12 @@ def renameThumbnails(coursefolder, assignments):
 
 
 if __name__ == '__main__':
-    s = r'C:\UPENN\161017'
+    s = r'C:\UPENN\161024\point-in-time-daylight-analysis'
     f = r'C:\Users\Administrator\Documents\GitHub\mostapharoudsari.github.io\data\teaching\upenn\arch753\fall16'
 
     assignments = ("dream-room", "meyerson-hall-canopy", "weather-data-analysis",
-                   "weather-data-analysis-II", "daylighting-I")
-    # dumpFiles('daylighting-I', s, f)
+                   "weather-data-analysis-II", "daylighting-I", 'daylighting-II',
+                   'annual_daylight')
+    # dumpFiles('daylighting-II', s, f)
     # renameThumbnails(f, assignments)
     # updateCourseInformation(f, assignments)
