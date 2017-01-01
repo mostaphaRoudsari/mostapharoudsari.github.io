@@ -197,7 +197,10 @@ if __name__ == '__main__':
 
     assignments = ("dream-room", "meyerson-hall-canopy", "weather-data-analysis",
                    "weather-data-analysis-II", "daylighting-I", 'daylighting-II',
-                   'annual_daylight', 'introduction_to_energy_simulation', 'final_project')
-    # dumpFiles('final_project', s, f)
-    # renameThumbnails(f, assignments)
-    # updateCourseInformation(f, assignments)
+                   'annual-daylight', 'introduction-to-energy-simulation', 'final-project')
+    # for a in assignments:
+    #     ss = os.path.join(s, a)
+    #     if os.path.isdir(ss):
+    #         dumpFiles(assignmentname=a, source=ss, target=f)
+    renameThumbnails(f, assignments)
+    updateCourseInformation(f, assignments)
