@@ -18,7 +18,8 @@ def pdf2thumbnails(pathToPdf):
     for page_num in xrange(reader.getNumPages()):
         writer = PdfFileWriter()
         writer.addPage(reader.getPage(page_num))
-        temp = NamedTemporaryFile(prefix=str(page_num), suffix=".pdf", delete=False)
+        temp = NamedTemporaryFile(prefix=str(page_num), suffix=".pdf",
+                                  delete=False)
         writer.write(temp)
         temp.close()
 
@@ -40,7 +41,7 @@ def createfolders(coursefolder, stundentInfo=None):
     Args:
         coursefolder: Fullpath to the course folder.
         studentsInfo: A json object for students that includes their name and
-            familyname. If None the script looks for student.json in coursefolder.
+            familyname. If None script looks for student.json in coursefolder.
     """
     # load studentsInfo
     if not stundentInfo:
@@ -62,7 +63,7 @@ def createfolders(coursefolder, stundentInfo=None):
 
 
 def updateCourseInformation(coursefolder, assignments, studentsInfo=None):
-    """Take student data as a json file and folders and generate a course.json."""
+    """Take student data as a json file and generate a course.json."""
     # load studentsInfo
     if not studentsInfo:
         with open(os.path.join(coursefolder, 'students.json')) as si:
@@ -75,7 +76,10 @@ def updateCourseInformation(coursefolder, assignments, studentsInfo=None):
     for student in studentsInfo:
         # find all the assignments and add them under their name
         # also add the assignment to assignments list
-        studentFolder = os.path.join(coursefolder, 'students', student['familyname'] + "_" + student['name'])
+        studentFolder = os.path.join(
+            coursefolder, 'students',
+            student['familyname'] + "_" + student['name']
+        )
         student['assignments'] = []
 
         for assignment in assignments:
@@ -90,7 +94,8 @@ def updateCourseInformation(coursefolder, assignments, studentsInfo=None):
                     if os.path.isfile(os.path.join(studentFolder, assignment, f)):
                         assignmentFiles.append(f)
 
-                student['assignments'].append({'name': assignment, 'files': assignmentFiles})
+                student['assignments'].append({'name': assignment,
+                                               'files': assignmentFiles})
 
     targetFile = os.path.join(coursefolder, "courseInfo.json")
     with open(targetFile, "w") as outf:
@@ -111,7 +116,8 @@ def dumpFiles(assignmentname, source, target, thumbnail=True):
     # copy files
     for f in os.listdir(source):
         if os.path.getsize(os.path.join(source, f)) > 10 ** 8:
-            print 'ERR: File size is larger than 100 MB. Resubmit the file.\n\t{}'.format(f)
+            print 'ERR: File size is larger than 100 MB.' \
+                'Resubmit the file.\n\t{}'.format(f)
             continue
         n, ext = os.path.splitext(f)
         try:
@@ -162,7 +168,8 @@ def renameThumbnails(coursefolder, assignments):
     for student in studentsInfo:
         # find all the assignments and add them under their name
         # also add the assignment to assignments list
-        studentFolder = os.path.join(coursefolder, 'students', student['familyname'] + "_" + student['name'])
+        studentFolder = os.path.join(coursefolder, 'students',
+                                     student['familyname'] + "_" + student['name'])
         for assignment in assignments:
             if os.path.isdir(os.path.join(studentFolder, assignment)):
                 # get png files
@@ -194,10 +201,11 @@ def renameThumbnails(coursefolder, assignments):
 if __name__ == '__main__':
     s = r'C:\UPENN'
     f = r'C:\Users\Administrator\Documents\GitHub\mostapharoudsari.github.io\data\teaching\upenn\arch753\fall16'
+    f = r'C:\Users\Mostapha\Documents\code\mostapharoudsari.github.io\data\teaching\upenn\arch753\fall16'
 
     assignments = ("dream-room", "meyerson-hall-canopy", "weather-data-analysis",
                    "weather-data-analysis-II", "daylighting-I", 'daylighting-II',
-                   'annual-daylight', 'introduction-to-energy-simulation', 'final-project')
+                   'annual-daylight', 'energy-simulation', 'final-project')
     # for a in assignments:
     #     ss = os.path.join(s, a)
     #     if os.path.isdir(ss):
