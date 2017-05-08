@@ -204,22 +204,26 @@
 		
 		d3.select("h2#project-name").text("Pick One of the courses!");
 		
-		// create grid
-		var courses = uridecode.years.map(function(y){ return d.courses[y]; });
-		
-		var coursesGrid = d3.select("#grid").selectAll(".grid")
-          	.data([].concat.apply([], courses))
-        	.enter().insert("a", "br")
-          		.attr("class", "grid")
-          		.attr("title", function(d) {return uridecode[d.name] + " " + uridecode[d.semester];})
-				.attr("width", "960px")
-          		.attr("height", "102px")
-          		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching?where=" + d.school + "&when=" + d.semester + "&what=" + d.name; })
-            .style("background-image", function(d) { return "url(" + background + ")";});
-		
-		coursesGrid.append("span")
-          .attr("class", "description")
-          .text(function(d) { return uridecode[d.name].replace(/-/g, " ") + " " + uridecode[d.semester].replace(/-/g, " "); });
+		d3.json(uridecode, function(error, data){
+			// create grid
+			var courses = data.semester.map(function(y){ return data.courses[y]; });
+			
+			var coursesGrid = d3.select("#grid").selectAll(".grid")
+				.data([].concat.apply([], courses))
+				.enter().insert("a", "br")
+					.attr("class", "grid")
+					.attr("title", function(d) {return data[d.name] + " " + data[d.semester];})
+					.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching?where=" + d.school + "&when=" + d.semester + "&what=" + d.name; })
+				.style("background-image", function(d) { return "url(" + background1 + ")";});
+			
+			d3.selectAll(".grid")
+				.style("width", "962px")
+				.style("height", "102px");
+			
+			coursesGrid.append("span")
+			  .attr("class", "description")
+			  .text(function(d) { return data[d.name].replace(/-/g, " ") + " || " + data[d.semester].replace(/-/g, " "); });
+		});
 	}
 
 
@@ -415,7 +419,7 @@
 		d3.select("h2#project-name").selectAll("text").remove();
 		d3.select("div#downloads").selectAll("span").remove();
 		d3.select("div#viewer").selectAll("object").remove();
-		d3.select(".grid").selectAll("a").remove();
+		d3.select("#grid").selectAll("a").remove();
 
 		//hide the footer
 		d3.select("footer").style("display", 'none');
