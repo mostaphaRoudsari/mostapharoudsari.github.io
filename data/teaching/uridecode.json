@@ -1,14 +1,33 @@
 {"upenn": "PennDesign",
-	"arch753": "Building Performance Simulation",
+  "arch753": "Building Performance Simulation",
+  "arch632": "Performance-Based Computational Design",
+	"arch633": "Environmental Systems I",
 	"arch754": "Building Performance Workshop",
 	"arch708": "Integrated Design Studio",
-	"fall15": "Fall 2015", "spring16": "Spring 2016", "fall16": "Fall 2016", "spring17": "Spring 2017",
-	"semester": ["spring17", "fall16", "spring16", "fall15"],
+	"fall15": "Fall 2015",
+  "spring16": "Spring 2016",
+  "fall16": "Fall 2016",
+  "spring17": "Spring 2017",
+  "fall17": "Fall 2017",
+  "semester": ["fall17", "spring17", "fall16", "spring16", "fall15"],
 	"courses": {
-		"fall15": [{"semester": "fall15", "name": "arch753", "school": "upenn"}],
-		"spring16": [{"semester": "spring16", "name": "arch708", "school": "upenn"}],
-		"fall16": [{"semester": "fall16", "name": "arch753", "school": "upenn"}],
-		"spring17": [{"semester": "spring17", "name": "arch754", "school": "upenn"},
-					 {"semester": "spring17", "name": "arch708", "school": "upenn"}]
+		"fall15": [
+      {"semester": "fall15", "name": "arch753", "school": "upenn"}
+    ],
+		"spring16": [
+      {"semester": "spring16", "name": "arch708", "school": "upenn"}
+    ],
+		"fall16": [
+      {"semester": "fall16", "name": "arch753", "school": "upenn"}
+    ],
+		"spring17": [
+      {"semester": "spring17", "name": "arch632", "school": "upenn"},
+      {"semester": "spring17", "name": "arch754", "school": "upenn"},
+			{"semester": "spring17", "name": "arch708", "school": "upenn"}
+    ],
+    "fall16": [
+      {"semester": "fall17", "name": "arch633", "school": "upenn"}
+      {"semester": "fall17", "name": "arch753", "school": "upenn"}
+    ]
 	}
 }
