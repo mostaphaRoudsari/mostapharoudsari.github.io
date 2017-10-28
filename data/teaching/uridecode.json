@@ -26,7 +26,7 @@
 			{"semester": "spring17", "name": "arch708", "school": "upenn"}
     ],
     "fall17": [
-      {"semester": "fall17", "name": "arch633", "school": "upenn"}
+      {"semester": "fall17", "name": "arch633", "school": "upenn"},
       {"semester": "fall17", "name": "arch753", "school": "upenn"}
     ]
 	}
