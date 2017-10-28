@@ -1,214 +1,176 @@
 """collection of functions to create and organize course folder."""
 import os
-from pyPdf import PdfFileReader, PdfFileWriter
-from tempfile import NamedTemporaryFile
-from wand.image import Image
+import glob
 import json
 
 
-def pdf2thumbnails(pathToPdf):
-    """Generate thumbnail png images from each page of pdf file.
-
-    You need to install wand and ghostscript on your system.
-    Check this discussion for step-by-step workflow
-    http://stackoverflow.com/questions/13984357/pythonmagick-cant-find-my-pdf-files
-    """
-    reader = PdfFileReader(open(pathToPdf, "rb"))
-    path, name = os.path.split(pathToPdf)
-    for page_num in xrange(reader.getNumPages()):
-        writer = PdfFileWriter()
-        writer.addPage(reader.getPage(page_num))
-        temp = NamedTemporaryFile(prefix=str(page_num), suffix=".pdf",
-                                  delete=False)
-        writer.write(temp)
-        temp.close()
-
-        with Image(filename=temp.name, resolution=(300, 300)) as img:
-            ar = 300.0 / img.width
-            img.resize(300, int(img.height * ar))
-            img.compression_quality = 99
-            img.save(filename=os.path.join(path, "thumbnail_%d.png" % (page_num)))
-        os.remove(temp.name)
-
-    del(reader)
-
-
-def createfolders(coursefolder, stundentInfo=None):
-    """Create folders for students.
-
-    Use this method only once to create the folders for a new course.
-
-    Args:
-        coursefolder: Fullpath to the course folder.
-        studentsInfo: A json object for students that includes their name and
-            familyname. If None script looks for student.json in coursefolder.
-    """
-    # load studentsInfo
-    if not stundentInfo:
-        with open(os.path.join(coursefolder, 'students.json')) as si:
-            stundentInfo = eval('\n'.join(si.readlines()))
-
-    # create students folder
-    bf = os.path.join(coursefolder, 'students')
-    if not os.path.isdir(bf):
-        os.mkdir(bf)
-
-    for student in stundentInfo:
-        foldername = '{}_{}'.format(student['familyname'], student['name'])
-        fullpath = os.path.join(bf, foldername)
-        try:
-            os.mkdir(fullpath)
-        except Exception as e:
-            print 'failed to create folder for {}:\n{}'.format(foldername, e)
-
-
-def updateCourseInformation(coursefolder, assignments, studentsInfo=None):
-    """Take student data as a json file and generate a course.json."""
-    # load studentsInfo
-    if not studentsInfo:
-        with open(os.path.join(coursefolder, 'students.json')) as si:
-            studentsInfo = eval('\n'.join(si.readlines()))
-
-    courseInfo = {
-        'students': studentsInfo
-    }
-
-    for student in studentsInfo:
-        # find all the assignments and add them under their name
-        # also add the assignment to assignments list
-        studentFolder = os.path.join(
-            coursefolder, 'students',
-            student['familyname'] + "_" + student['name']
-        )
-        student['assignments'] = []
-
-        for assignment in assignments:
-            if os.path.isdir(os.path.join(studentFolder, assignment)):
-                assignmentFiles = []
-
-                # find all the files
-                files = os.listdir(os.path.join(studentFolder, assignment))
-                for f in files:
-                    if f == "thumbnail_0.png":
-                        continue
-                    if os.path.isfile(os.path.join(studentFolder, assignment, f)):
-                        assignmentFiles.append(f)
-
-                student['assignments'].append({'name': assignment,
-                                               'files': assignmentFiles})
-
-    targetFile = os.path.join(coursefolder, "courseInfo.json")
-    with open(targetFile, "w") as outf:
-        json.dump(courseInfo, outf)
-
-
-def dumpFiles(assignmentname, source, target, thumbnail=True):
+def init_folder(source_folder, target_folder, members_json):
     """copy files from source folder to course folder.
-
     Args:
-        assignmentname: name for assignement.
-        source: source folder with students files (e.g. Upenn's coursefolder).
-        target: full path to local folder for students.
+        source_folder: source folder with students files.
+        target_folder: full path to local folder for students.
+        members_json: path to students.json or groups.json file for the assignment.
     """
+    # create a set of student names
+    with open(members_json, 'rb') as inf:
+        data = json.load(inf)
+    try:
+        members = {'{}_{}'.format(st['family_name'], st['name']).lower() for st in data}
+    except KeyError:
+        # group project
+        members = {st['name'].lower() for st in data}
+
     # for each file in course folder, find name and family name
-    # try to find the student folder
-    # create a new folder for this assignement if it's not there yet
-    # copy files
-    for f in os.listdir(source):
-        if os.path.getsize(os.path.join(source, f)) > 10 ** 8:
+    # check if the name and family name matches the student
+    # rename and copy it to the new folder
+    for f in os.listdir(source_folder):
+        if os.path.getsize(os.path.join(source_folder, f)) > 10 ** 8:
             print 'ERR: File size is larger than 100 MB.' \
                 'Resubmit the file.\n\t{}'.format(f)
             continue
         n, ext = os.path.splitext(f)
         try:
             try:
-                name, familyname = n.split('_')[:2]
-            except:
-                name, familyname = n.split()[:2]
+                family_name, name = n.lower().split('_')[:2]
+            except Exception:
+                family_name, name = n.lower().split()[:2]
         except Exception as e:
             print 'ERR: Failed to find name, familyname from {}!\n\t{}'.format(n, e)
         else:
-            # check for the folder
-            sf = os.path.join(target, 'students',
-                              '{0}_{1}'.format(familyname.lower().strip(),
-                                               name.lower().strip()))
-            if not os.path.isdir(sf):
-                sf = os.path.join(target, 'students',
-                                  '{1}_{0}'.format(familyname.lower().strip(),
-                                                   name.lower().strip()))
-                if not os.path.isdir(sf):
-                    print 'ERR: Failed to find folder for {1}_{0}!'.format(name, familyname)
-                    continue
-
-            tf = os.path.join(sf, assignmentname)
+            # if the name is valid
             try:
-                os.mkdir(tf)
-            except:
-                pass
-
-            try:
-                print "Copying {}!".format(f.lower())
-                os.rename(os.path.join(source, f),
-                          os.path.join(tf, f))
-            except Exception, e:
-                print 'ERR: Failed to move {} to {}:\n\t{}'.format(f, tf, e)
+                assert '{}_{}'.format(family_name, name) in members, \
+                    '{} {} is not a student'.format(name, family_name)
+            except AssertionError as e:
+                print(e)
             else:
-                # if pdf create a thumbnail
-                if thumbnail and f.lower().endswith('pdf'):
-                    print "Creating thumbnails for {}".format(f.lower())
-                    pdf2thumbnails(os.path.join(tf, f.lower()))
+                try:
+                    print "Copying {}!".format(f.lower())
+                    os.rename(os.path.join(source_folder, f),
+                              os.path.join(target_folder, f.lower()))
+                except Exception as e:
+                    print('ERR: Failed to copy {} to {}:\n\t{}'.format(f,
+                                                                       target_folder,
+                                                                       e))
 
 
-def renameThumbnails(coursefolder, assignments):
-    """Search folders and rename thumbnail files to thumbnail_0."""
-    # thumbnail_0.png
-    with open(os.path.join(coursefolder, 'students.json')) as si:
-        studentsInfo = eval('\n'.join(si.readlines()))
+def collect_assignments(project_folder):
+    """Collect assignments from the folders and create assignments.json"""
+    # load the current assignments.json file
+    assgn_file = os.path.join(project_folder, 'assignments.json')
+    assert os.path.isfile(assgn_file), \
+        'Cannot find assignments.json file at: {}.'.format(assgn_file)
 
-    for student in studentsInfo:
-        # find all the assignments and add them under their name
-        # also add the assignment to assignments list
-        studentFolder = os.path.join(coursefolder, 'students',
-                                     student['familyname'] + "_" + student['name'])
+    with open(assgn_file, 'rb') as inf:
+        assignments = json.load(inf)
+
+    # check for the assignments that should be loaded
+    for assignment in assignments:
+        if not assignment['reload']:
+            continue
+
+        assignment['submissions'] = []
+        name = assignment['name']
+        folder = assignment['folder']
+        is_group_project = assignment['is_group_project']
+        print('Loading "%s" form "./%s"' % (name, folder))
+        # go inside the folder and collect all the available files for each
+        # student/group create submission objects
+        fullpath = os.path.join(project_folder, folder)
+        assert os.path.isdir(fullpath), \
+            'Cannot find assignment folder at: {}.'.format(fullpath)
+        # load members
+        if is_group_project:
+            # load groups.json file
+            members_json = os.path.join(fullpath, 'groups.json')
+        else:
+            # load the students file
+            members_json = os.path.join(project_folder, 'students.json')
+
+        assert os.path.isfile(members_json), \
+            'Cannot find students/group file at: {}.'.format(members_json)
+
+        with open(members_json, 'rb') as memf:
+            members = json.load(memf)
+
+        for member in members:
+            # load assignments for each member as create a submission object
+            if is_group_project:
+                key = member['name']
+                submission = {
+                    'team': member['members'],
+                    'team_name': key,
+                    'files': [],
+                    'thumbnail': 'thumbnails/%s.png' % key
+                }
+            else:
+                key = member['family_name'] + '_' + member['name']
+                submission = {
+                    'team': [member],
+                    'team_name': member['name'] + ' ' + member['family_name'],
+                    'files': [],
+                    'thumbnail': 'thumbnails/%s.png' % key
+                }
+
+            files = glob.glob(os.path.join(fullpath, '%s*' % key))
+            if not files:
+                continue
+            submission['files'] = tuple(os.path.split(f)[-1] for f in files)
+            assignment['submissions'].append(submission)
+
+        assignment['reload'] = False
+
+    # write updated assignments
+    with open(assgn_file, 'wb') as outf:
+        json.dump(assignments, outf, indent=2)
+
+
+def get_students_info(project_folder, students_json=None, assignments_json=None):
+    """create students_info.json from assignments.json.
+
+    Args:
+        students_json: full path to students.json.
+        assignments_json: full path to assignments.json file created by
+            collect_assignments.
+    """
+    students_json = students_json or os.path.join(project_folder, 'students.json')
+    assignments_json = assignments_json or os.path.join(project_folder,
+                                                        'assignments.json')
+    assert os.path.isfile(students_json), \
+        'Cannot find students.json file at: {}.'.format(students_json)
+
+    assert os.path.isfile(assignments_json), \
+        'Cannot find assignments.json file at: {}.'.format(assignments_json)
+
+    student_info_file = os.path.join(project_folder, 'students_info.json')
+
+    with open(students_json, 'rb') as inf:
+        students = json.load(inf)
+
+    with open(assignments_json, 'rb') as assf:
+        assignments = json.load(assf)
+
+    for student in students:
+        students_id = student['id']
+        student['submissions'] = []
         for assignment in assignments:
-            if os.path.isdir(os.path.join(studentFolder, assignment)):
-                # get png files
-                f = os.path.join(studentFolder, assignment)
-                pngFiles = tuple(ff.lower() for ff in os.listdir(f) if ff.lower().endswith('.png'))
+            submission = {
+                'name': assignment['name'],
+                'folder': assignment['folder'],
+                'thumbnail': None
+            }
+            for sub in assignment['submissions']:
+                for member in sub['team']:
+                    if member['id'] == students_id:
+                        submission['thumbnail'] = sub['thumbnail']
+                        student['submissions'].append(submission)
+                        break
 
-                if not pngFiles:
-                    continue
-
-                if len(pngFiles) == 1:
-                    # remove rest of the files
-                    if pngFiles[0] == 'thumbnail_0.png':
-                        continue
-                    else:
-                        # rename file to thumbnail_0
-                        print 'Renaming {}\\{}'.format(f, pngFiles[0])
-                        os.rename(os.path.join(f, pngFiles[0]),
-                                  os.path.join(f, 'thumbnail_0.png'))
-                elif 'thumbnail_0.png' in pngFiles:
-                    # remove rest of the files
-                    for pf in pngFiles:
-                        if pf != 'thumbnail_0.png':
-                            print 'removing {}\\{}'.format(f, pf)
-                            # os.remove(os.path.join(f, pf))
-                else:
-                    print 'Check {} and rename one of the files to thumbnail_0.png'.format(f)
+    with open(student_info_file, 'wb') as outf:
+        json.dump(students, outf, indent=4)
 
 
 if __name__ == '__main__':
-    s = r'C:\UPENN'
-    f = r'C:\Users\Administrator\Documents\GitHub\mostapharoudsari.github.io\data\teaching\upenn\arch753\fall16'
-    f = r'C:\Users\Mostapha\Documents\code\mostapharoudsari.github.io\data\teaching\upenn\arch753\fall16'
-
-    assignments = ("dream-room", "meyerson-hall-canopy", "weather-data-analysis",
-                   "weather-data-analysis-II", "daylighting-I", 'daylighting-II',
-                   'annual-daylight', 'energy-simulation', 'final-project')
-    # for a in assignments:
-    #     ss = os.path.join(s, a)
-    #     if os.path.isdir(ss):
-    #         dumpFiles(assignmentname=a, source=ss, target=f)
-    renameThumbnails(f, assignments)
-    updateCourseInformation(f, assignments)
+    project_folder = r"C:\Users\Mostapha\Documents\code\teaching-2017\arch633"
+    collect_assignments(project_folder)
+    get_students_info(project_folder)
