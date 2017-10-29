@@ -76,6 +76,9 @@
 		<!-- Course name and drop downs -->
 		<div id = "course-info">
 		</div>
+    <div style="float: right">
+      <a href="https://mostapharoudsari.github.io/teaching" title="Back to teaching">[X]</a>
+    </div>
 	</header>
 	<div id = "info">
 		<!-- Student name / Assignment topic -->
@@ -123,9 +126,17 @@
 </script>
 
 <script type="text/javascript">
-	// keywords that will be used to parse the related data to
-	let school, course, semester, studentId, assignment;
-	let keywords = parseUri();
+  const uridecode = "https://raw.githubusercontent.com/mostaphaRoudsari/mostapharoudsari.github.io/master/data/teaching/uridecode.json";
+
+  // keywords that will be used to parse the related data to
+	let school = null,
+    course = null,
+    semester = null,
+    year = 17,
+    studentId = null,
+    assignment = null;
+
+  let keywords = parseUri();
 
 	if (keywords){
 		school = keywords.where,
@@ -135,19 +146,19 @@
 		assignment = keywords.which;
 	}
 
-	let students,
-		uridecode = "../data/teaching/uridecode.json",
-		baseLocation = "../data/teaching/"+ school + "/" + course + "/" + semester,
-		courseInfo = baseLocation + "/courseInfo.json";
+  if (semester) year = semester.slice(-2);
 
-	let background = "../lib/images/gradient_background.png"
-	let background1 = "../lib/images/gradient_background_1.png"
+	const baseLocation = "https://raw.githubusercontent.com/mostaphaRoudsari/teaching-20" + year + "/master/" + course,
+		assignments_info = baseLocation + "/assignments.json",
+    students_info = baseLocation + "/students_info.json";
 
-	uridecode = "https://raw.githubusercontent.com/mostaphaRoudsari/mostapharoudsari.github.io/master/data/teaching/uridecode.json";
+	const background = "lib/images/gradient_background.png"
+	const background1 = "lib/images/gradient_background_1.png"
+
 
 	if (!keywords){
 		// load list for all the courses
-		load_courses();
+		load_courses(uridecode);
 
 	} else {
 
@@ -160,42 +171,37 @@
 
 			d3.select("div#course-info")
 				.append("a")
-					.attr("href", function(d){ return "https://mostapharoudsari.github.io/teaching?where=" + school + "&when=" + semester + "&what=" + course; })
+					.attr("href", function(d){
+            return "https://mostapharoudsari.github.io/teaching?where=" + school + "&when=" + semester + "&what=" + course; })
 					.text(titleText);
 		});
 
+		// render the page based on input keywords
+		if (!studentId && !assignment){
+      // there is no student id or assignment - load all the students
+			load_students();
 
-		// load courseInfo.json
-		d3.json(courseInfo, function(error, data){
-			students = data.students;
+		} else if (!assignment){
 
-			// render the page based on input keywords
-			if (!studentId && !assignment){
-				load_students();
+			// student is selected - load the assignments for the student
+			load_assignments();
 
-			} else if (!assignment){
+		} else if (!studentId){
 
-				// student is selected - load the assignments for the student
-				load_assignments();
+			// none of the students is selected
+			// load all the students who has this assignment
+			load_students_assignment();
 
-			} else if (!studentId){
+		} else if (studentId && assignment){
 
-				// none of the students is selected
-				// load all the students who has this assignment
-				load_students_assignment();
-
-			} else if (studentId && assignment){
-
-				// load assignment page for this student
-				load_assignment();
-			}
-
-		});
+			// load assignment page for this student
+			load_assignment();
+		}
 
 	}
 
 
-	function load_courses(){
+	function load_courses(uridecode){
 		d3.select("div#course-info")
 			.append("a")
 				.attr("href", function(d){ return "https://mostapharoudsari.github.io/teaching"; })
@@ -230,20 +236,23 @@
 
 		d3.select("h2#project-name").text("Pick One of the students!");
 
-		// create grid
-		var studentsGrid = d3.select("#grid").selectAll(".grid")
-          	.data(students)
-        	.enter().insert("a", "br")
-          		.attr("class", "grid")
-          		.attr("title", function(d) {return d.name + " " + d.familyname;})
-          		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching?who=" + d.id + "&where=" + school + "&when=" + semester + "&what=" + course; })
-            .style("background-image", function(d) { return "url(" + background + ")";});
+    // load students
+    d3.json(students_info, function(error, students){
+  		// create grid
+  		var studentsGrid = d3.select("#grid").selectAll(".grid")
+            	.data(students)
+          	.enter().insert("a", "br")
+            		.attr("class", "grid")
+            		.attr("title", function(d) {return d.name + " " + d.family_name;})
+            		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching?who=" + d.id + "&where=" + school + "&when=" + semester + "&what=" + course; })
+              .style("background-image", function(d) { return "url(" + background + ")";});
 
 
-        studentsGrid.append("span")
-          .attr("class", "description")
-          .text(function(d) { return d.name.replace(/-/g, " ") + " " + d.familyname.replace(/-/g, " "); });
-	}
+          studentsGrid.append("span")
+            .attr("class", "description")
+            .text(function(d) { return d.name.replace(/-/g, " ") + " " + d.family_name.replace(/-/g, " "); });
+    });
+  }
 
 
 	function load_students_assignment(){
@@ -253,131 +262,141 @@
 
 		update_project_name(assignment);
 
-		// pick students who have submitted this assignment
-		var selectedStudents = students.filter(function(s){
+    d3.json(assignments_info, function(error, assignments){
+  		// pick students who have submitted this assignment
+  		var selectedAssignment = assignments.filter(function(as){
+  			return as.name == assignment;
+  		})[0];
 
-			var assignments = s['assignments'].map(function(asg){ return asg.name; });
-
-			return assignments.indexOf(assignment) != -1;
-
-		});
-
-		// create grid
-		var assignmentsGrid = d3.select("#grid").selectAll(".grid")
-          	.data(selectedStudents)
-        	.enter().insert("a", "br")
-          		.attr("class", "grid")
-          		.attr("title", function(d) {return d.familyname + "_" + d.name;})
-          		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching?who=" + d.id + "&where=" + school + "&when=" + semester + "&what=" + course + "&which=" + assignment; })
-            .style("background-image", function(d) {
-            	return "url(" + baseLocation + "/students/" + d.familyname + "_" + d.name + "/" + assignment + "/thumbnail_0.png" + ")";
-            });
+  		// create grid
+  		var assignmentsGrid = d3.select("#grid").selectAll(".grid")
+            	.data(selectedAssignment.submissions)
+          	.enter().insert("a", "br")
+            		.attr("class", "grid")
+            		.attr("title", function(d) {return d.team_name;})
+            		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching?who=" + d.team[0].id + "&where=" + school + "&when=" + semester + "&what=" + course + "&which=" + assignment; })
+              .style("background-image", function(d) {
+                if (d.thumbnail != null){
+                  return "url(" + baseLocation + "/" + selectedAssignment.folder + "/" + d.thumbnail.replace(/ /g, "%20") + ")";
+                } else {
+                  return "url(" + background1 + ")";
+                }
+              });
 
 
-        assignmentsGrid.append("span")
-          .attr("class", "description")
-          .text(function(d) { return d.name.replace(/-/g, " ") + " " + d.familyname.replace(/-/g, " "); });
-	}
+          assignmentsGrid.append("span")
+            .attr("class", "description")
+            .text(function(d) { return d.team_name.replace(/-/g, " "); });
+    });
+  }
 
 
 	function load_assignments(){
-		// load assignments for
+		// load assignments for a student
 		reset_page();
 
 		d3.select("h2#project-name").text("Pick One of the assignments!");
 
-		var student = students.filter(function(s){return s.id == studentId;})[0];
+    d3.json(students_info, function(error, students){
+  		var student = students.filter(function(s){return s.id == studentId;})[0];
 
-		var studentInfo = {
-				name: student.name + " " + student.familyname,
-				email: student.email
-			};
+  		// add student name on the top of the page
+  		update_student_name([student]);
 
-		// add student name on the top of the page
-		update_student_name(studentInfo);
+  		// create grid
+  		var assignmentsGrid = d3.select("#grid").selectAll(".grid")
+            	.data(student['submissions'])
+          	.enter().insert("a", "br")
+            		.attr("class", "grid")
+            		.attr("title", function(d) {return d.name;})
+            		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching?who=" + studentId + "&where=" + school + "&when=" + semester + "&what=" + course + "&which=" + d.name; })
+              .style("background-image", function(d) {
+                if (d.thumbnail != null){
+                  return "url(" + baseLocation + "/" + d.folder + "/" + d.thumbnail.replace(/ /g, "%20") + ")";
+                } else {
+                  return "url(" + background1 + ")";
+                }
+              });
 
-		// create grid
-		var assignmentsGrid = d3.select("#grid").selectAll(".grid")
-          	.data(student['assignments'].map(function(d){ return d.name; }))
-        	.enter().insert("a", "br")
-          		.attr("class", "grid")
-          		.attr("title", function(d) {return d;})
-          		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching?who=" + studentId + "&where=" + school + "&when=" + semester + "&what=" + course + "&which=" + d; })
-            .style("background-image", function(d) {
-            	return "url(" + baseLocation + "/students/" + student.familyname + "_" + student.name + "/" + d + "/thumbnail_0.png" + ")";
-            });
 
-
-        assignmentsGrid.append("span")
-          .attr("class", "description")
-          .text(function(d) { return d.replace(/-/g, " "); });
-
+          assignmentsGrid.append("span")
+            .attr("class", "description")
+            .text(function(d) { return d.name.replace(/-/g, " "); });
+    });
 	}
 
 
 	function load_assignment(){
-
+    // load a single assignment for a student
 		reset_page();
 
-		var student = students.filter(function(s){return s.id == studentId;})[0];
-		var studentInfo = {
-				name: student.name + " " + student.familyname,
-				email: student.email
-			},
-			project_name = assignment;
+    d3.json(assignments_info, function(error, assignments){
 
-		var assignmentInfo = student["assignments"].filter(function(d){ return d.name == project_name; })[0];
+      // pick students who have submitted this assignment
+  		var target_assignment = assignments.filter(function(as){
+  			return as.name == assignment;
+  		})[0];
 
-		var filenames = assignmentInfo["files"];
+      var student_assignment = target_assignment.submissions.filter(
+        function(s){
+          var ids = s.team.map(function(m){return m.id.toString();});
+          return ids.indexOf(studentId) != -1;
+        }
+      );
 
-		var pdffiles = filenames.filter(function(f){return f.toLowerCase().endsWith('.pdf')});
+      if (student_assignment === []) return;
 
-		var studentFolder = baseLocation + "/students/" + student.familyname + "_" + student.name + "/" + project_name;
+      var assignment_info = student_assignment[0];
 
-		update_student_name(studentInfo);
+  		var pdffiles = assignment_info.files.filter(function(f){return f.toLowerCase().endsWith('.pdf')});
 
-		// update project name
-		update_project_name(project_name);
+  		var assignment_folder = baseLocation + "/" + target_assignment.folder;
+      var relative_folder = assignment_folder.replace("https://raw.githubusercontent.com/mostaphaRoudsari", "..").replace("/master/", "/");
+  		update_student_name(assignment_info.team);
 
-		// update file list
-		var files = d3.select("div#downloads")
-			.selectAll("span").data(filenames)
-			.enter()
-			.append("span")
-			.attr("class", "files")
-			.attr("title", "Click to download the file.")
-			.on("click", function(d){ window.location = studentFolder + "/" + encodeURIComponent(d);});
+  		// update project name
+  		update_project_name(target_assignment.name);
 
-		// append icons
-		files.append("img")
-			.attr("class", "filename")
-			.attr("src", function(d){return get_icon_name(d);});
+  		// update file list
+  		var files = d3.select("div#downloads")
+  			.selectAll("span").data(assignment_info.files)
+  			.enter()
+  			.append("span")
+  			.attr("class", "files")
+  			.attr("title", "Click to download the file.")
+  			.on("click", function(d){ window.location = assignment_folder + "/" + encodeURIComponent(d);});
 
-		// append file names
-		files.append("span")
-			.attr("class", "filename")
-			.text(function(d){return d;});
+  		// append icons
+  		files.append("img")
+  			.attr("class", "filename")
+  			.attr("src", function(d){return get_icon_name(d);});
 
-		// update link for pdf file
-		d3.select("div#viewer")
-			.selectAll("object")
-			.data(pdffiles).enter()
-			.append("object")
-				.attr("id", "viewer")
-				.attr("data", function(d){return studentFolder + "/" + encodeURIComponent(d);})
-				.attr("type", "application/pdf")
-				.append("param")
-					.attr("name", "zoom")
-					.attr("value", "scale"); //Set initial zoom. Won't work in Chrome
+  		// append file names
+  		files.append("span")
+  			.attr("class", "filename")
+  			.text(function(d){return d;});
 
-		// unhide the footer
-		d3.select("footer").style("display", 'block');
-	}
+  		// update link for pdf file
+  		d3.select("div#viewer")
+  			.selectAll("object")
+  			.data(pdffiles).enter()
+  			.append("object")
+  				.attr("id", "viewer")
+  				.attr("data", function(d){return relative_folder + "/" + encodeURIComponent(d);})
+  				.attr("type", "application/pdf")
+  				.append("param")
+  					.attr("name", "zoom")
+  					.attr("value", "scale"); //Set initial zoom. Won't work in Chrome
+
+  		// unhide the footer
+  		d3.select("footer").style("display", 'block');
+    });
+  }
 
 
 	function get_icon_name(filename){
 
-		return "../lib/icons/" + filename.split(".")[filename.split(".").length-1].toLowerCase() + ".ico";
+		return "lib/icons/" + filename.split(".")[filename.split(".").length-1].toLowerCase() + ".ico";
 	}
 
 
@@ -385,18 +404,18 @@
 
 		// update name
 		var studentnav = d3.select("h1#student-name")
-			.selectAll("a").data([studentInfo])
-			.enter();
+			.selectAll("div").data(studentInfo)
+			.enter().append("div");
 
 		studentnav.append("a")
-				.attr("href", function(d){return "https://mostapharoudsari.github.io/teaching?who=" + studentId + "&where=" + school + "&when=" + semester + "&what=" + course;})
-				.text(function(d){return d.name;});
+				.attr("href", function(d){return "https://mostapharoudsari.github.io/teaching?who=" + d.id + "&where=" + school + "&when=" + semester + "&what=" + course;})
+				.text(function(d){return d.name + " " + d.family_name;});
 
 		studentnav.append("span")
 					.append("a")
 					.attr("class", "description")
 					.attr("target", "blank")
-					.attr("href", function(d){return "mailto:" + d.email + "?Subject=ARCH753%20Project";})
+					.attr("href", function(d){return "mailto:" + d.email;})
 					.text("[contact]");
 	}
 
@@ -414,7 +433,7 @@
 
 	function reset_page(){
 		// remove all the current objects from the page
-		d3.select("h1#student-name").selectAll("a").remove();
+		d3.select("h1#student-name").selectAll("div").remove();
 		d3.select("h2#project-name").selectAll("text").remove();
 		d3.select("div#downloads").selectAll("span").remove();
 		d3.select("div#viewer").selectAll("object").remove();
