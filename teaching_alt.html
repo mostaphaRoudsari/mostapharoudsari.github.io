@@ -1,0 +1,436 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Teaching</title>
+	<link rel="icon" type="image/x-icon" href="lib/favicon.ico">
+	<link rel="stylesheet" type="text/css" href="lib/style.css">
+    <script src="lib/d3.min.js"></script>
+
+	<style type="text/css">
+
+		span.components,
+		span.dependencies {
+	    	border-radius: 5px;
+	    	margin: 3px;
+		    padding: 2px;
+		    display: inline-block;
+	    	font-size: .9em;
+	    }
+
+		span.components{
+			border: 2px solid #BDC0C7;
+		}
+
+		span.dependencies {
+			border: 2px solid #B73939;
+		}
+
+	    div#imageContainer {
+	    	margin: auto;
+	    	display: block;
+	    	border: 3px solid #000000;
+	    	border-radius: 10px;
+	    	padding: 10px;
+	    }
+
+	    div#slideshow{
+	    	margin: 0 auto;
+	    	text-align: center;
+	    }
+
+	    button{
+	    	cursor: pointer;
+	    }
+
+	    .files{
+	    	cursor: pointer;
+	    }
+
+	    .files:hover {
+    		color: #aaa;
+		}
+
+	    .filename{
+	    	font-size: 13px;
+    		padding-left: 2px;
+    		padding-right: 6px;
+	    	text-decoration: underline;
+	    }
+
+		#viewer{
+	    	margin-top: .5em;
+		}
+
+	    object#viewer{
+	    	width: 960px;
+	    	height: 720px;
+	    }
+
+    </style>
+</head>
+
+<body>
+	<header>
+		<!-- Course name and drop downs -->
+		<div id = "course-info">
+		</div>
+	</header>
+	<div id = "info">
+		<!-- Student name / Assignment topic -->
+		<h1 id="student-name"></h1>
+		<h2 id="project-name"></h2>
+	</div>
+	<div id = "grid">
+		<!-- image grid -->
+	</div>
+	<div id = "downloads">
+		<!-- list of available files to download -->
+	</div>
+	<div id = "viewer">
+		<!-- pdf viewer -->
+	</div>
+	<footer>
+		Created by <a href="https://github.com/mostaphaRoudsari" target="blank">Mostapha Sadeghipor Roudsari</a>
+		<a href="https://twitter.com/__mostapha__" target="blank" style="float:right"> @__Mostapha__</a>
+	</footer>
+</body>
+
+<script type="text/javascript">
+	function parseUri(){
+
+	    var inputParameters = { where : null, 	// school name
+	    						what: null, 	// course name
+	    						when: null, 	// semester
+	    						who: null,		// student id
+	    						which: null		// assignment
+	    						};
+
+	    // parse Uri
+	    var pars = window.location.search.replace("?","").split("&");
+
+	    if (pars[0]=="") return;
+
+	    pars.forEach(function(d){
+	        keyValue = d.split("=");
+	        inputParameters[keyValue[0].toLowerCase()] = decodeURIComponent(keyValue[1]);
+	    });
+
+		return inputParameters;
+	}
+
+</script>
+
+<script type="text/javascript">
+  const uridecode = "https://raw.githubusercontent.com/mostaphaRoudsari/mostapharoudsari.github.io/master/data/teaching/uridecode.json";
+
+  // keywords that will be used to parse the related data to
+	let school = null,
+    course = null,
+    semester = null,
+    year = 17,
+    studentId = null,
+    assignment = null;
+
+  let keywords = parseUri();
+
+	if (keywords){
+		school = keywords.where,
+		course = keywords.what,
+		semester = keywords.when,
+		studentId = keywords.who,
+		assignment = keywords.which;
+	}
+
+  if (semester) year = semester.slice(-2);
+
+	const baseLocation = "https://raw.githubusercontent.com/mostaphaRoudsari/teaching-20" + year + "/master/" + course,
+		assignments_info = baseLocation + "/assignments.json",
+    students_info = baseLocation + "/students_info.json";
+
+	const background = "lib/images/gradient_background.png"
+	const background1 = "lib/images/gradient_background_1.png"
+
+
+	if (!keywords){
+		// load list for all the courses
+		load_courses(uridecode);
+
+	} else {
+
+		// generate heading
+		d3.json(uridecode, function(error, data){
+			// get human readable data
+			var titleText = [data[school], data[course], data[semester]].join(" | ");
+
+			d3.select("title").text(data[course]);
+
+			d3.select("div#course-info")
+				.append("a")
+					.attr("href", function(d){
+            return "https://mostapharoudsari.github.io/teaching_alt?where=" + school + "&when=" + semester + "&what=" + course; })
+					.text(titleText);
+		});
+
+		// render the page based on input keywords
+		if (!studentId && !assignment){
+      // there is no student id or assignment - load all the students
+			load_students();
+
+		} else if (!assignment){
+
+			// student is selected - load the assignments for the student
+			load_assignments();
+
+		} else if (!studentId){
+
+			// none of the students is selected
+			// load all the students who has this assignment
+			load_students_assignment();
+
+		} else if (studentId && assignment){
+
+			// load assignment page for this student
+			load_assignment();
+		}
+
+	}
+
+
+	function load_courses(uridecode){
+		d3.select("div#course-info")
+			.append("a")
+				.attr("href", function(d){ return "https://mostapharoudsari.github.io/teaching_alt"; })
+					.text("Course list");
+
+		d3.select("h2#project-name").text("Pick One of the courses!");
+
+		d3.json(uridecode, function(error, data){
+			// create grid
+			var courses = data.semester.map(function(y){ return data.courses[y]; });
+
+			var coursesGrid = d3.select("#grid").selectAll(".grid")
+				.data([].concat.apply([], courses))
+				.enter().insert("a", "br")
+					.attr("class", "grid")
+					.attr("title", function(d) {return data[d.name] + " " + data[d.semester];})
+					.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching_alt?where=" + d.school + "&when=" + d.semester + "&what=" + d.name; })
+				.style("background-image", function(d) { return "url(" + background1 + ")";});
+
+			d3.selectAll(".grid")
+				.style("width", "962px")
+				.style("height", "102px");
+
+			coursesGrid.append("span")
+			  .attr("class", "description")
+			  .text(function(d) { return data[d.name].replace(/-/g, " ") + " || " + data[d.semester].replace(/-/g, " "); });
+		});
+	}
+
+
+	function load_students(){
+
+		d3.select("h2#project-name").text("Pick One of the students!");
+
+    // load students
+    d3.json(students_info, function(error, students){
+  		// create grid
+  		var studentsGrid = d3.select("#grid").selectAll(".grid")
+            	.data(students)
+          	.enter().insert("a", "br")
+            		.attr("class", "grid")
+            		.attr("title", function(d) {return d.name + " " + d.family_name;})
+            		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching_alt?who=" + d.id + "&where=" + school + "&when=" + semester + "&what=" + course; })
+              .style("background-image", function(d) { return "url(" + background + ")";});
+
+
+          studentsGrid.append("span")
+            .attr("class", "description")
+            .text(function(d) { return d.name.replace(/-/g, " ") + " " + d.family_name.replace(/-/g, " "); });
+    });
+  }
+
+
+	function load_students_assignment(){
+
+		// load assignments for
+		reset_page();
+
+		update_project_name(assignment);
+
+    d3.json(assignments_info, function(error, assignments){
+  		// pick students who have submitted this assignment
+  		var selectedAssignment = assignments.filter(function(as){
+  			return as.name == assignment;
+  		})[0];
+
+  		// create grid
+  		var assignmentsGrid = d3.select("#grid").selectAll(".grid")
+            	.data(selectedAssignment.submissions)
+          	.enter().insert("a", "br")
+            		.attr("class", "grid")
+            		.attr("title", function(d) {return d.team_name;})
+            		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching_alt?who=" + d.team[0].id + "&where=" + school + "&when=" + semester + "&what=" + course + "&which=" + assignment; })
+              .style("background-image", function(d) {
+                return "url(" + baseLocation + "/" + selectedAssignment.folder + "/" + d.thumbnail.replace(/ /g, "%20") + ")";
+              });
+
+
+          assignmentsGrid.append("span")
+            .attr("class", "description")
+            .text(function(d) { return d.team_name.replace(/-/g, " "); });
+    });
+  }
+
+
+	function load_assignments(){
+		// load assignments for a student
+		reset_page();
+
+		d3.select("h2#project-name").text("Pick One of the assignments!");
+
+    d3.json(students_info, function(error, students){
+  		var student = students.filter(function(s){return s.id == studentId;})[0];
+
+  		// add student name on the top of the page
+  		update_student_name([student]);
+
+  		// create grid
+  		var assignmentsGrid = d3.select("#grid").selectAll(".grid")
+            	.data(student['submissions'])
+          	.enter().insert("a", "br")
+            		.attr("class", "grid")
+            		.attr("title", function(d) {return d.name;})
+            		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching_alt?who=" + studentId + "&where=" + school + "&when=" + semester + "&what=" + course + "&which=" + d.name; })
+              .style("background-image", function(d) {
+              	return "url(" + baseLocation + "/" + d.folder + "/" + d.thumbnail.replace(/ /g, "%20") + ")";
+              });
+
+
+          assignmentsGrid.append("span")
+            .attr("class", "description")
+            .text(function(d) { return d.name.replace(/-/g, " "); });
+    });
+	}
+
+
+	function load_assignment(){
+    // load a single assignment for a student
+		reset_page();
+
+    d3.json(assignments_info, function(error, assignments){
+
+      // pick students who have submitted this assignment
+  		var target_assignment = assignments.filter(function(as){
+  			return as.name == assignment;
+  		})[0];
+
+      var student_assignment = target_assignment.submissions.filter(
+        function(s){
+          var ids = s.team.map(function(m){return m.id.toString();});
+          return ids.indexOf(studentId) != -1;
+        }
+      );
+
+      if (student_assignment === []) return;
+
+      var assignment_info = student_assignment[0];
+
+  		var pdffiles = assignment_info.files.filter(function(f){return f.toLowerCase().endsWith('.pdf')});
+
+  		var assignment_folder = baseLocation + "/" + target_assignment.folder;
+
+  		update_student_name(assignment_info.team);
+
+  		// update project name
+  		update_project_name(target_assignment.name);
+
+  		// update file list
+  		var files = d3.select("div#downloads")
+  			.selectAll("span").data(assignment_info.files)
+  			.enter()
+  			.append("span")
+  			.attr("class", "files")
+  			.attr("title", "Click to download the file.")
+  			.on("click", function(d){ window.location = assignment_folder + "/" + encodeURIComponent(d);});
+
+  		// append icons
+  		files.append("img")
+  			.attr("class", "filename")
+  			.attr("src", function(d){return get_icon_name(d);});
+
+  		// append file names
+  		files.append("span")
+  			.attr("class", "filename")
+  			.text(function(d){return d;});
+
+  		// update link for pdf file
+  		d3.select("div#viewer")
+  			.selectAll("object")
+  			.data(pdffiles).enter()
+  			.append("object")
+  				.attr("id", "viewer")
+  				.attr("data", function(d){return assignment_folder + "/" + encodeURIComponent(d);})
+  				.attr("type", "application/pdf")
+  				.append("param")
+  					.attr("name", "zoom")
+  					.attr("value", "scale"); //Set initial zoom. Won't work in Chrome
+
+  		// unhide the footer
+  		d3.select("footer").style("display", 'block');
+    });
+  }
+
+
+	function get_icon_name(filename){
+
+		return "lib/icons/" + filename.split(".")[filename.split(".").length-1].toLowerCase() + ".ico";
+	}
+
+
+	function update_student_name(studentInfo){
+
+		// update name
+		var studentnav = d3.select("h1#student-name")
+			.selectAll("div").data(studentInfo)
+			.enter().append("div");
+
+		studentnav.append("a")
+				.attr("href", function(d){return "https://mostapharoudsari.github.io/teaching_alt?who=" + d.id + "&where=" + school + "&when=" + semester + "&what=" + course;})
+				.text(function(d){return d.name + " " + d.family_name;});
+
+		studentnav.append("span")
+					.append("a")
+					.attr("class", "description")
+					.attr("target", "blank")
+					.attr("href", function(d){return "mailto:" + d.email;})
+					.text("[contact]");
+	}
+
+
+	function update_project_name(project_name){
+
+		// remove current text if any
+		// update project name
+		d3.select("h2#project-name")
+			.append("a")
+			.attr("href", function(d){return "https://mostapharoudsari.github.io/teaching_alt?where=" + school + "&when=" + semester + "&what=" + course + "&which=" + project_name;})
+			.text(project_name.replace(/-/g, " "));
+	}
+
+
+	function reset_page(){
+		// remove all the current objects from the page
+		d3.select("h1#student-name").selectAll("div").remove();
+		d3.select("h2#project-name").selectAll("text").remove();
+		d3.select("div#downloads").selectAll("span").remove();
+		d3.select("div#viewer").selectAll("object").remove();
+		d3.select("#grid").selectAll("a").remove();
+
+		//hide the footer
+		d3.select("footer").style("display", 'none');
+	}
+
+
+</script>

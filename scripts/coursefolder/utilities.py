@@ -101,7 +101,7 @@ def collect_assignments(project_folder):
                     'team': member['members'],
                     'team_name': key,
                     'files': [],
-                    'thumbnail': 'thumbnails/%s.png' % key
+                    'thumbnail': None
                 }
             else:
                 key = member['family_name'] + '_' + member['name']
@@ -109,13 +109,19 @@ def collect_assignments(project_folder):
                     'team': [member],
                     'team_name': member['name'] + ' ' + member['family_name'],
                     'files': [],
-                    'thumbnail': 'thumbnails/%s.png' % key
+                    'thumbnail': None
                 }
 
             files = glob.glob(os.path.join(fullpath, '%s*' % key))
+            thumbnail = glob.glob(os.path.join(fullpath, 'thumbnails', '%s*' % key))
+
             if not files:
                 continue
             submission['files'] = tuple(os.path.split(f)[-1] for f in files)
+            if thumbnail:
+                submission['thumbnail'] = \
+                    'thumbnails/%s' % os.path.split(thumbnail[0])[-1]
+
             assignment['submissions'].append(submission)
 
         assignment['reload'] = False

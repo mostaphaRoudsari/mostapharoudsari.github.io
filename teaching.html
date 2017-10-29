@@ -73,7 +73,7 @@
 
 <body>
 	<header>
-		<!-- Course name and drop downs -->	
+		<!-- Course name and drop downs -->
 		<div id = "course-info">
 		</div>
 	</header>
@@ -84,13 +84,13 @@
 	</div>
 	<div id = "grid">
 		<!-- image grid -->
-	</div> 
+	</div>
 	<div id = "downloads">
 		<!-- list of available files to download -->
 	</div>
 	<div id = "viewer">
 		<!-- pdf viewer -->
-	</div> 
+	</div>
 	<footer>
 		Created by <a href="https://github.com/mostaphaRoudsari" target="blank">Mostapha Sadeghipor Roudsari</a>
 		<a href="https://twitter.com/__mostapha__" target="blank" style="float:right"> @__Mostapha__</a>
@@ -123,10 +123,10 @@
 </script>
 
 <script type="text/javascript">
-	// keywords that will be used to parse the related data to 
-	var school, course, semester, studentId, assignment;
-	var keywords = parseUri();
-	
+	// keywords that will be used to parse the related data to
+	let school, course, semester, studentId, assignment;
+	let keywords = parseUri();
+
 	if (keywords){
 		school = keywords.where,
 		course = keywords.what,
@@ -135,23 +135,22 @@
 		assignment = keywords.which;
 	}
 
-	var students,
+	let students,
 		uridecode = "../data/teaching/uridecode.json",
 		baseLocation = "../data/teaching/"+ school + "/" + course + "/" + semester,
 		courseInfo = baseLocation + "/courseInfo.json";
-	
-	var background = "../lib/images/gradient_background.png"
-	var background1 = "../lib/images/gradient_background_1.png"
-	
-	//courseInfo = "https://dl.dropboxusercontent.com/u/16228160/D3TestData/courseInfo.json";
+
+	let background = "../lib/images/gradient_background.png"
+	let background1 = "../lib/images/gradient_background_1.png"
+
 	uridecode = "https://raw.githubusercontent.com/mostaphaRoudsari/mostapharoudsari.github.io/master/data/teaching/uridecode.json";
-	
+
 	if (!keywords){
 		// load list for all the courses
 		load_courses();
-	
+
 	} else {
-	
+
 		// generate heading
 		d3.json(uridecode, function(error, data){
 			// get human readable data
@@ -166,7 +165,7 @@
 		});
 
 
-		// load courseInfo.json	
+		// load courseInfo.json
 		d3.json(courseInfo, function(error, data){
 			students = data.students;
 
@@ -175,16 +174,16 @@
 				load_students();
 
 			} else if (!assignment){
-				
+
 				// student is selected - load the assignments for the student
 				load_assignments();
 
 			} else if (!studentId){
-				
+
 				// none of the students is selected
 				// load all the students who has this assignment
 				load_students_assignment();
-			
+
 			} else if (studentId && assignment){
 
 				// load assignment page for this student
@@ -200,14 +199,14 @@
 		d3.select("div#course-info")
 			.append("a")
 				.attr("href", function(d){ return "https://mostapharoudsari.github.io/teaching"; })
-					.text("Teaching | Semester-Long Courses");
-		
+					.text("Course list");
+
 		d3.select("h2#project-name").text("Pick One of the courses!");
-		
+
 		d3.json(uridecode, function(error, data){
 			// create grid
 			var courses = data.semester.map(function(y){ return data.courses[y]; });
-			
+
 			var coursesGrid = d3.select("#grid").selectAll(".grid")
 				.data([].concat.apply([], courses))
 				.enter().insert("a", "br")
@@ -215,11 +214,11 @@
 					.attr("title", function(d) {return data[d.name] + " " + data[d.semester];})
 					.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching?where=" + d.school + "&when=" + d.semester + "&what=" + d.name; })
 				.style("background-image", function(d) { return "url(" + background1 + ")";});
-			
+
 			d3.selectAll(".grid")
 				.style("width", "962px")
 				.style("height", "102px");
-			
+
 			coursesGrid.append("span")
 			  .attr("class", "description")
 			  .text(function(d) { return data[d.name].replace(/-/g, " ") + " || " + data[d.semester].replace(/-/g, " "); });
@@ -228,9 +227,9 @@
 
 
 	function load_students(){
-		
+
 		d3.select("h2#project-name").text("Pick One of the students!");
-		
+
 		// create grid
 		var studentsGrid = d3.select("#grid").selectAll(".grid")
           	.data(students)
@@ -248,8 +247,8 @@
 
 
 	function load_students_assignment(){
-		
-		// load assignments for 
+
+		// load assignments for
 		reset_page();
 
 		update_project_name(assignment);
@@ -282,13 +281,13 @@
 
 
 	function load_assignments(){
-		// load assignments for 
+		// load assignments for
 		reset_page();
 
 		d3.select("h2#project-name").text("Pick One of the assignments!");
 
 		var student = students.filter(function(s){return s.id == studentId;})[0];
-		
+
 		var studentInfo = {
 				name: student.name + " " + student.familyname,
 				email: student.email
@@ -316,10 +315,10 @@
 	}
 
 
-	function load_assignment(){	
-		
+	function load_assignment(){
+
 		reset_page();
-		
+
 		var student = students.filter(function(s){return s.id == studentId;})[0];
 		var studentInfo = {
 				name: student.name + " " + student.familyname,
@@ -328,7 +327,7 @@
 			project_name = assignment;
 
 		var assignmentInfo = student["assignments"].filter(function(d){ return d.name == project_name; })[0];
-				
+
 		var filenames = assignmentInfo["files"];
 
 		var pdffiles = filenames.filter(function(f){return f.toLowerCase().endsWith('.pdf')});
@@ -375,7 +374,7 @@
 		d3.select("footer").style("display", 'block');
 	}
 
-	
+
 	function get_icon_name(filename){
 
 		return "../lib/icons/" + filename.split(".")[filename.split(".").length-1].toLowerCase() + ".ico";
@@ -392,7 +391,7 @@
 		studentnav.append("a")
 				.attr("href", function(d){return "https://mostapharoudsari.github.io/teaching?who=" + studentId + "&where=" + school + "&when=" + semester + "&what=" + course;})
 				.text(function(d){return d.name;});
-		
+
 		studentnav.append("span")
 					.append("a")
 					.attr("class", "description")
@@ -403,9 +402,9 @@
 
 
 	function update_project_name(project_name){
-		
+
 		// remove current text if any
-		// update project name		
+		// update project name
 		d3.select("h2#project-name")
 			.append("a")
 			.attr("href", function(d){return "https://mostapharoudsari.github.io/teaching?where=" + school + "&when=" + semester + "&what=" + course + "&which=" + project_name;})
