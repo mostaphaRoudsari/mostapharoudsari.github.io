@@ -273,7 +273,11 @@
             		.attr("title", function(d) {return d.team_name;})
             		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching_alt?who=" + d.team[0].id + "&where=" + school + "&when=" + semester + "&what=" + course + "&which=" + assignment; })
               .style("background-image", function(d) {
-                return "url(" + baseLocation + "/" + selectedAssignment.folder + "/" + d.thumbnail.replace(/ /g, "%20") + ")";
+                if (d.thumbnail != null){
+                  return "url(" + baseLocation + "/" + selectedAssignment.folder + "/" + d.thumbnail.replace(/ /g, "%20") + ")";
+                } else {
+                  return "url(" + background1 + ")";
+                }
               });
 
 
@@ -304,7 +308,11 @@
             		.attr("title", function(d) {return d.name;})
             		.attr("href", function(d) { return "https://mostapharoudsari.github.io/teaching_alt?who=" + studentId + "&where=" + school + "&when=" + semester + "&what=" + course + "&which=" + d.name; })
               .style("background-image", function(d) {
-              	return "url(" + baseLocation + "/" + d.folder + "/" + d.thumbnail.replace(/ /g, "%20") + ")";
+                if (d.thumbnail != null){
+                  return "url(" + baseLocation + "/" + d.folder + "/" + d.thumbnail.replace(/ /g, "%20") + ")";
+                } else {
+                  return "url(" + background1 + ")";
+                }
               });
 
 
