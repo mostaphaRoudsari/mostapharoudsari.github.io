@@ -340,7 +340,7 @@
   		var pdffiles = assignment_info.files.filter(function(f){return f.toLowerCase().endsWith('.pdf')});
 
   		var assignment_folder = baseLocation + "/" + target_assignment.folder;
-
+      var relative_folder = assignment_folder.replace("https://raw.githubusercontent.com/mostaphaRoudsari", "..").replace("/master/", "/");
   		update_student_name(assignment_info.team);
 
   		// update project name
@@ -371,7 +371,7 @@
   			.data(pdffiles).enter()
   			.append("object")
   				.attr("id", "viewer")
-  				.attr("data", function(d){return assignment_folder + "/" + encodeURIComponent(d);})
+  				.attr("data", function(d){return relative_folder + "/" + encodeURIComponent(d);})
   				.attr("type", "application/pdf")
   				.append("param")
   					.attr("name", "zoom")
