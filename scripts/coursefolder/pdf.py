@@ -58,9 +58,7 @@ def rename_thumbnails(folder):
 
 if __name__ == '__main__':
     # test pdf to thumbnails
-    project_folder = r"C:\Users\Mostapha\Documents\code\teaching-2017\arch633"
-    for d in os.listdir(project_folder):
-        if os.path.isdir(os.path.join(project_folder, d)):
-            target_folder = os.path.join(project_folder, d, 'thumbnails')
-            # pdf_folder_to_thumbnails(os.path.join(project_folder, d), target_folder)
-            # rename_thumbnails(target_folder)
+    project_folder = r"C:\Users\Mostapha\Documents\code\teaching-2017\arch708\mid_review"
+    target_folder = os.path.join(project_folder, 'thumbnails')
+    # pdf_folder_to_thumbnails(project_folder, target_folder)
+    rename_thumbnails(target_folder)

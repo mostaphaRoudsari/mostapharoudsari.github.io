@@ -1,7 +1,0 @@
-in:Myceliumthickness,in:Concretethickness,out:cooling,out:heating,img
-0.4,0.4,85120.646856,6516.597747,Myceliumthickness_0.4_Concretethickness_0.4.png,
-0.5,0.4,85036.215901,6235.378903,Myceliumthickness_0.5_Concretethickness_0.4.png,
-0.4,0.5,84822.304063,6594.688476,Myceliumthickness_0.4_Concretethickness_0.5.png,
-0.4,0.6,84311.211201,6454.323494,Myceliumthickness_0.4_Concretethickness_0.6.png,
-0.4,0.7,84006.810554,6447.545191,Myceliumthickness_0.4_Concretethickness_0.7.png,
-0.4,0.8,83699.698678,6394.851773,Myceliumthickness_0.4_Concretethickness_0.8.png,

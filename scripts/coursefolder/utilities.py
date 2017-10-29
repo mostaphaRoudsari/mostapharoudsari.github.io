@@ -177,6 +177,10 @@ def get_students_info(project_folder, students_json=None, assignments_json=None)
 
 
 if __name__ == '__main__':
-    project_folder = r"C:\Users\Mostapha\Documents\code\teaching-2017\arch633"
+    project_folder = r"C:\Users\Mostapha\Documents\code\teaching-2017\arch708"
+    # students_json = r"C:\Users\Mostapha\Documents\code\teaching-2017\arch753\students.json"
+    # for f in os.listdir(source_folder):
+    #     init_folder(source_folder + "\\" + f,
+    #                 target_folder + "\\" + f, students_json)
     collect_assignments(project_folder)
     get_students_info(project_folder)
